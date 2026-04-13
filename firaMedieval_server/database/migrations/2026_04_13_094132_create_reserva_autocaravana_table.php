@@ -17,10 +17,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('aparcament_id');
             $table->foreign('aparcament_id')->references('id')->on('aparcaments')->onDelete('cascade');
-            $table->string('nom');
-            $table->string('cognoms');
-            $table->string('email');
-            $table->string('telefon');
             $table->string('marca_vehicle');
             $table->string('model_vehicle');
             $table->string('matricula');
