@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     public function inscripcionsActivitats()
     {
-        return $this->belongsToMany(Activitat::class, 'inscripcion', 'user_id', 'activitat_id')
+        return $this->belongsToMany(Activitat::class, 'inscripcions', 'user_id', 'activitat_id')
             ->withPivot('estat')
             ->withTimestamps();
     }

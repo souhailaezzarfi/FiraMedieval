@@ -9,13 +9,12 @@ class Activitat extends Model
 {
     use HasFactory;
 
-    protected $table = 'activitat';
+    protected $table = 'activitats';
 
     protected $fillable = [
         'nom',
         'organitzador',
         'descripcio',
-        'categoria_id',
         'aforament',
         'ubicacio',
         'imatge',
@@ -28,12 +27,12 @@ class Activitat extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Categoria::class, 'categoria_activitat', 'activitat_id', 'categoria_id');
+        return $this->belongsToMany(Categoria::class, 'activitat_categoria', 'activitat_id', 'categoria_id');
     }
 
-    public function inscripcionsUsuaris()
+    public function usuarisInscrits()
     {
-        return $this->belongsToMany(User::class, 'inscripcion', 'activitat_id', 'user_id')
+        return $this->belongsToMany(User::class, 'inscripcions', 'activitat_id', 'user_id')
             ->withPivot('estat')
             ->withTimestamps();
     }

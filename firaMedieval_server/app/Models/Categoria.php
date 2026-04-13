@@ -9,7 +9,7 @@ class Categoria extends Model
 {
     use HasFactory;
 
-    protected $table = 'categoria';
+    protected $table = 'categories';
 
     protected $fillable = [
         'nom',
@@ -17,6 +17,6 @@ class Categoria extends Model
 
     public function activitats()
     {
-        return $this->belongsToMany(Activitat::class, 'categoria_activitat', 'categoria_id', 'activitat_id');
+        return $this->belongsToMany(Activitat::class, 'activitat_categoria', 'categoria_id', 'activitat_id');
     }
 }
