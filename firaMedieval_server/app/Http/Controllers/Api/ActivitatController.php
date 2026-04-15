@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Activitat;
 use App\Models\Categoria;
 
+
 class ActivitatController extends Controller
 {
     /**
@@ -32,6 +33,7 @@ class ActivitatController extends Controller
      */
     public function store(Request $request)
     {
+
         $request->validate(
             [
                 'nom' => 'required|string|max:100',
@@ -43,7 +45,7 @@ class ActivitatController extends Controller
                 'categories.*' => 'required|string|max:50',
                 'horaris' => 'nullable|array',
                 'horaris.*.hora_inici' => 'required_with:horaris|date',
-                'horaris.*.hora_final' => 'required_with:horaris|date|after:horaris.*.hora_inici',
+                'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
@@ -57,6 +59,7 @@ class ActivitatController extends Controller
                 'categories.required' => 'L\'activitat ha de tenir com a mínim una categoria.',
                 'categories.min' => 'L\'activitat ha de tenir com a mínim una categoria.',
                 'categories.*.max' => 'El nom de la categoria no pot superar els 50 caràcters.',
+                'horaris.*.hora_inici.required_with' => 'L\'hora d\'inici ha de ser indicada.',
                 'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
@@ -84,7 +87,7 @@ class ActivitatController extends Controller
                 foreach ($request->horaris as $horariData) {
                     $activitat->horaris()->create([
                         'hora_inici' => $horariData['hora_inici'],
-                        'hora_final' => $horariData['hora_final'],
+                        'hora_final' => $horariData['hora_final'] ?? null,
                     ]);
                 }
             }
@@ -130,20 +133,22 @@ class ActivitatController extends Controller
                 'organitzador' => 'sometimes|string|max:100',
                 'descripcio' => 'sometimes|string',
                 'ubicacio' => 'sometimes|string|max:100',
-                'aforament' => 'sometimes|integer|min:1',
-                'categories' => 'required|array|min:1',
+                'aforament' => 'sometimes|nullable|integer|min:1',
+                'categories' => 'sometimes|array|min:1',
                 'categories.*' => 'required|string|max:50',
-                'horaris' => 'nullable|array',
+                'horaris' => 'sometimes|array',
                 'horaris.*.hora_inici' => 'required_with:horaris|date',
-                'horaris.*.hora_final' => 'required_with:horaris|date|after:horaris.*.hora_inici',
+                'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
                 'nom.max' => 'El nom no pot superar els 100 caràcters.',
                 'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
                 'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
-                'categories.required' => 'L\'activitat ha de tenir com a mínim una categoria.',
+                
                 'categories.*.max' => 'El nom de la categoria no pot superar els 50 caràcters.',
+                
+                'horaris.*.hora_inici.required_with' => 'L\'hora d\'inici ha de ser indicada.',
                 'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
@@ -173,7 +178,7 @@ class ActivitatController extends Controller
                 foreach ($request->horaris as $horariData) {
                     $activitat->horaris()->create([
                         'hora_inici' => $horariData['hora_inici'],
-                        'hora_final' => $horariData['hora_final'],
+                        'hora_final' => $horariData['hora_final'] ?? null,
                     ]);
                 }
             }
