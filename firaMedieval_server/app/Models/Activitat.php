@@ -30,6 +30,7 @@ class Activitat extends Model
         return $this->belongsToMany(Categoria::class, 'activitat_categoria', 'activitat_id', 'categoria_id');
     }
 
+
     public function usuarisInscrits()
     {
         return $this->belongsToMany(User::class, 'inscripcions', 'activitat_id', 'user_id')
