@@ -31,7 +31,7 @@ class ActivitatController extends Controller
      */
     public function store(Request $request)
     {
-
+        // 1. Validació de dades (incloent-hi els horaris)
         $request->validate(
             [
                 'nom' => 'required|string|max:100',
@@ -40,6 +40,9 @@ class ActivitatController extends Controller
                 'ubicacio' => 'required|string|max:100',
                 'aforament' => 'nullable|integer|min:1',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'horaris' => 'nullable|array',
+                'horaris.*.hora_inici' => 'required_with:horaris|date',
+                'horaris.*.hora_final' => 'required_with:horaris|date|after:horaris.*.hora_inici',
             ],
             [
                 'nom.required' => 'El nom de l\'activitat és obligatori.',
@@ -47,17 +50,15 @@ class ActivitatController extends Controller
                 'organitzador.required' => 'Has d\'indicar qui organitza l\'activitat.',
                 'descripcio.required' => 'La descripció és necessària per als assistents.',
                 'ubicacio.required' => 'Has d\'indicar la ubicació de l\'activitat.',
-                'aforament.integer' => 'El aforament ha de ser un nombre entero.',
-                'aforament.min' => 'El aforament ha de ser almenys 1 personatge.',
+                'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
+                'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
-
+                'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
             ]
         );
 
-
-        //Ejecutar la validación
-
+        // 2. Transacció a la base de dades
         $activitat = DB::transaction(function () use ($request) {
 
             $activitat = new Activitat();
@@ -72,18 +73,21 @@ class ActivitatController extends Controller
                 $activitat->imatge = $path;
             }
 
-            $activitat->save(); //Guardamos la actividad
+            $activitat->save(); // Guardem l'activitat
 
-            //Guardamos los horarios vinculados
-            if ($request->has('horaris')) {
-                foreach ($request->horaris as $horari) {
-                    // Esto crea automáticamente el horario con el activitat_id correcto
-                    $activitat->horaris()->create($horari);
+            // Guardem els horaris vinculats (si n'hi ha)
+            if ($request->has('horaris') && is_array($request->horaris)) {
+                foreach ($request->horaris as $horariData) {
+                    $activitat->horaris()->create([
+                        'hora_inici' => $horariData['hora_inici'],
+                        'hora_final' => $horariData['hora_final'],
+                    ]);
                 }
             }
 
-            return $activitat; //Devolvemos el objeto creado
+            return $activitat; // Retornem l'objecte creat
         });
+
 
         return response()->json($activitat->load('horaris'), 201);
     }
@@ -93,9 +97,15 @@ class ActivitatController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Afegim 'with' perquè retorni l'activitat junt amb els seus horaris
+        $activitat = Activitat::with('horaris')->findOrFail($id);
+        
+        // Formatem l'enllaç de la imatge com a l'index
+        if ($activitat->imatge) {
+            $activitat->imatge = asset('storage/' . $activitat->imatge);
+        }
 
-        return Activitat::findOrFail($id);
+        return response()->json($activitat);
     }
 
     /**
@@ -103,54 +113,64 @@ class ActivitatController extends Controller
      */
     public function update(Request $request, string $id)
     {
-
+        $activitat = Activitat::findOrFail($id);
 
         $request->validate(
             [
-                'nom' => 'string|max:100',
-                'organitzador' => 'string|max:100',
-                'descripcio' => 'string',
-                'ubicacio' => 'string|max:100',
-                'aforament' => 'integer|min:1',
+                'nom' => 'sometimes|string|max:100',
+                'organitzador' => 'sometimes|string|max:100',
+                'descripcio' => 'sometimes|string',
+                'ubicacio' => 'sometimes|string|max:100',
+                'aforament' => 'sometimes|integer|min:1',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'horaris' => 'nullable|array',
+                'horaris.*.hora_inici' => 'required_with:horaris|date',
+                'horaris.*.hora_final' => 'required_with:horaris|date|after:horaris.*.hora_inici',
             ],
             [
                 'nom.max' => 'El nom no pot superar els 100 caràcters.',
-                'aforament.integer' => 'El aforament ha de ser un nombre entero.',
-                'aforament.min' => 'El aforament ha de ser almenys 1 personatge.',
+                'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
+                'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
+                'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
             ]
         );
 
+        $activitat = DB::transaction(function () use ($request, $activitat) {
 
-        //Ejecutar la validación
+            // Actualitzem només els camps que venen a la Request
+            $activitat->fill($request->except(['imatge', 'horaris']));
 
-        $activitat = Activitat::findOrFail($id);
+            if ($request->hasFile('imatge')) {
+                // Esborrar la imatge antiga si existeix
+                if ($activitat->imatge) {
+                    Storage::disk('public')->delete($activitat->imatge);
+                }
 
-        // Solo actualizamos si el usuario envió ese campo específicamente
-        if ($request->has('nom')) $activitat->nom = $request->nom;
-        if ($request->has('organitzador')) $activitat->organitzador = $request->organitzador;
-        if ($request->has('descripcio')) $activitat->descripcio = $request->descripcio;
-        if ($request->has('ubicacio')) $activitat->ubicacio = $request->ubicacio;
-        if ($request->has('aforament')) $activitat->aforament = $request->aforament;
-
-
-        if ($request->hasFile('imatge')) {
-
-            // A. Borrar la imagen antigua si existe
-            if ($activitat->imatge) {
-                Storage::disk('public')->delete($activitat->imatge);
+                // Guardar la nova imatge
+                $path = $request->file('imatge')->store('imatges', 'public');
+                $activitat->imatge = $path;
             }
 
-            // B. Guardar la nueva imagen
-            $path = $request->file('imatge')->store('imatges', 'public');
-            $activitat->imatge = $path;
-        }
+            $activitat->save();
 
-        $activitat->save();
+            // Actualització dels horaris: Esborrem els antics i creem els nous
+            if ($request->has('horaris') && is_array($request->horaris)) {
+                $activitat->horaris()->delete(); // Borrem els vells
+                
+                foreach ($request->horaris as $horariData) {
+                    $activitat->horaris()->create([
+                        'hora_inici' => $horariData['hora_inici'],
+                        'hora_final' => $horariData['hora_final'],
+                    ]);
+                }
+            }
 
-        return response()->json($activitat);
+            return $activitat;
+        });
+
+        return response()->json($activitat->load('horaris'), 200);
     }
 
     /**
@@ -160,13 +180,13 @@ class ActivitatController extends Controller
     {
         $activitat = Activitat::findOrFail($id);
 
-        // Borrar imagen física
+        // Esborrar la imatge física del servidor abans d'eliminar l'activitat
         if ($activitat->imatge) {
             Storage::disk('public')->delete($activitat->imatge);
         }
 
         $activitat->delete();
 
-        return response()->json(['message' => 'Activitat eliminada'], 200);
+        return response()->json(['message' => 'Activitat eliminada correctament'], 200);
     }
 }
