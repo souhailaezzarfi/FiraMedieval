@@ -2,19 +2,31 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ActivitatController;
-use App\Http\Controllers\Api\CategoriaController;
-use App\Http\Controllers\Api\AparcamentController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ReservaAutocaravanaController;
+use App\Http\Controllers\Api\ActivitatController;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+// Rutes públiques
+Route::post('/register', [UserController::class, 'register']);
+Route::post('/login', [UserController::class, 'login']);
+
+// Rutes d'activitats per als visitants
+Route::get('/activitats', [ActivitatController::class, 'index']);
+Route::get('/activitats/{activitat}', [ActivitatController::class, 'show']);
+
+
+// Rutes protegides
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Tancar sessió
+    Route::post('/logout', [UserController::class, 'logout']);
+
+    // Rutes de reserves d'autocaravanes
+    Route::apiResource('reserves', ReservaAutocaravanaController::class);
+
+    // Rutes d'activitats per a l'administrador (crear, editar, esborrar)
+    Route::post('/activitats', [ActivitatController::class, 'store']);
+    Route::put('/activitats/{activitat}', [ActivitatController::class, 'update']);
+    Route::delete('/activitats/{activitat}', [ActivitatController::class, 'destroy']);
+
 });
-
-// Activitats
-Route::apiResource('activitats', ActivitatController::class);
-Route::apiResource('categories', CategoriaController::class);
-Route::apiResource('aparcaments', AparcamentController::class);
-
-// Reserva autocaravanes
-Route::apiResource('reserves-autocaravanes', ReservaAutocaravanaController::class);
