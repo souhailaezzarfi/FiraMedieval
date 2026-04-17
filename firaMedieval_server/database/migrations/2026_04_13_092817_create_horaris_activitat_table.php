@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('activitat_id');
             $table->foreign('activitat_id')->references('id')->on('activitats')->onDelete('cascade');
             $table->dateTime('hora_inici');
-            $table->dateTime('hora_final');
+            $table->dateTime('hora_final')->nullable();
             $table->timestamps();
         });
     }

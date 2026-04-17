@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Activitat;
+use App\Models\Categoria;
+
 
 class ActivitatController extends Controller
 {
@@ -15,7 +17,7 @@ class ActivitatController extends Controller
      */
     public function index()
     {
-        $activitats = Activitat::with('horaris')->get();
+        $activitats = Activitat::with(['horaris', 'categories'])->get();
 
         foreach ($activitats as $activitat) {
             if ($activitat->imatge) {
@@ -39,6 +41,11 @@ class ActivitatController extends Controller
                 'descripcio' => 'required|string',
                 'ubicacio' => 'required|string|max:100',
                 'aforament' => 'nullable|integer|min:1',
+                'categories' => 'required|array|min:1',
+                'categories.*' => 'required|string|max:50',
+                'horaris' => 'required|array|min:1',
+                'horaris.*.hora_inici' => 'required_with:horaris|date',
+                'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
@@ -47,16 +54,17 @@ class ActivitatController extends Controller
                 'organitzador.required' => 'Has d\'indicar qui organitza l\'activitat.',
                 'descripcio.required' => 'La descripció és necessària per als assistents.',
                 'ubicacio.required' => 'Has d\'indicar la ubicació de l\'activitat.',
-                'aforament.integer' => 'El aforament ha de ser un nombre entero.',
-                'aforament.min' => 'El aforament ha de ser almenys 1 personatge.',
+                'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
+                'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
+                'categories.required' => 'L\'activitat ha de tenir com a mínim una categoria.',
+                'categories.min' => 'L\'activitat ha de tenir com a mínim una categoria.',
+                'categories.*.max' => 'El nom de la categoria no pot superar els 50 caràcters.',
+                'horaris.*.hora_inici.required_with' => 'L\'hora d\'inici ha de ser indicada.',
+                'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
-
             ]
         );
-
-
-        //Ejecutar la validación
 
         $activitat = DB::transaction(function () use ($request) {
 
@@ -72,20 +80,30 @@ class ActivitatController extends Controller
                 $activitat->imatge = $path;
             }
 
-            $activitat->save(); //Guardamos la actividad
+            $activitat->save();
 
-            //Guardamos los horarios vinculados
-            if ($request->has('horaris')) {
-                foreach ($request->horaris as $horari) {
-                    // Esto crea automáticamente el horario con el activitat_id correcto
-                    $activitat->horaris()->create($horari);
+            // Guardar els horaris establerts
+            if ($request->has('horaris') && is_array($request->horaris)) {
+                foreach ($request->horaris as $horariData) {
+                    $activitat->horaris()->create([
+                        'hora_inici' => $horariData['hora_inici'],
+                        'hora_final' => $horariData['hora_final'] ?? null,
+                    ]);
                 }
             }
 
-            return $activitat; //Devolvemos el objeto creado
+            // Guardar les categories (crear-les si no existeixen)
+            $categoryIds = [];
+            foreach ($request->categories as $nomCategoria) {
+                $categoria = Categoria::firstOrCreate(['nom' => $nomCategoria]);
+                $categoryIds[] = $categoria->id;
+            }
+            $activitat->categories()->attach($categoryIds);
+
+            return $activitat;
         });
 
-        return response()->json($activitat->load('horaris'), 201);
+        return response()->json($activitat->load(['horaris', 'categories']), 201);
     }
 
     /**
@@ -93,9 +111,13 @@ class ActivitatController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $activitat = Activitat::with(['horaris', 'categories'])->findOrFail($id);
 
-        return Activitat::findOrFail($id);
+        if ($activitat->imatge) {
+            $activitat->imatge = asset('storage/' . $activitat->imatge);
+        }
+
+        return response()->json($activitat);
     }
 
     /**
@@ -103,54 +125,84 @@ class ActivitatController extends Controller
      */
     public function update(Request $request, string $id)
     {
-
+        $activitat = Activitat::findOrFail($id);
 
         $request->validate(
             [
-                'nom' => 'string|max:100',
-                'organitzador' => 'string|max:100',
-                'descripcio' => 'string',
-                'ubicacio' => 'string|max:100',
-                'aforament' => 'integer|min:1',
+                'nom' => 'sometimes|required|string|max:100',
+                'organitzador' => 'sometimes|required|string|max:100',
+                'descripcio' => 'sometimes|required|string',
+                'ubicacio' => 'sometimes|required|string|max:100',
+                'aforament' => 'sometimes|nullable|integer|min:1',
+                'categories' => 'sometimes|required|array|min:1',
+                'categories.*' => 'required|string|max:50',
+                'horaris' => 'sometimes|required|array|min:1',
+                'horaris.*.hora_inici' => 'required_with:horaris|date',
+                'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
+                'nom.required' => 'El nom es obligatori.',
                 'nom.max' => 'El nom no pot superar els 100 caràcters.',
-                'aforament.integer' => 'El aforament ha de ser un nombre entero.',
-                'aforament.min' => 'El aforament ha de ser almenys 1 personatge.',
+                'organitzador.required' => 'Has d\'indicar qui organitza l\'activitat.',
+                'descripcio.required' => 'La descripció es obligatoria per als assistents.',
+
+                'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
+                'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
+                'categories.required' => 'Has d\'indicar alguna categoria.',
+                'categories.min' => 'Has d\'indicar alguna categoria.',
+                'categories.*.max' => 'El nom de la categoria no pot superar els 50 caràcters.',
+                'horaris.required' => 'Has d\'indicar algun horari.',
+                'horaris.*.hora_inici.required_with' => 'L\'hora d\'inici ha de ser indicada.',
+                'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',
                 'imatge.max' => 'La imatge no pot pesar més de 2MB.',
             ]
         );
 
+        $activitat = DB::transaction(function () use ($request, $activitat) {
 
-        //Ejecutar la validación
+            $activitat->fill($request->except(['imatge', 'horaris', 'categories']));
 
-        $activitat = Activitat::findOrFail($id);
+            if ($request->hasFile('imatge')) {
+                // Esborrar la imatge antiga si existeix
+                if ($activitat->imatge) {
+                    Storage::disk('public')->delete($activitat->imatge);
+                }
 
-        // Solo actualizamos si el usuario envió ese campo específicamente
-        if ($request->has('nom')) $activitat->nom = $request->nom;
-        if ($request->has('organitzador')) $activitat->organitzador = $request->organitzador;
-        if ($request->has('descripcio')) $activitat->descripcio = $request->descripcio;
-        if ($request->has('ubicacio')) $activitat->ubicacio = $request->ubicacio;
-        if ($request->has('aforament')) $activitat->aforament = $request->aforament;
-
-
-        if ($request->hasFile('imatge')) {
-
-            // A. Borrar la imagen antigua si existe
-            if ($activitat->imatge) {
-                Storage::disk('public')->delete($activitat->imatge);
+                // Guardar la nova imatge
+                $path = $request->file('imatge')->store('imatges', 'public');
+                $activitat->imatge = $path;
             }
 
-            // B. Guardar la nueva imagen
-            $path = $request->file('imatge')->store('imatges', 'public');
-            $activitat->imatge = $path;
-        }
+            $activitat->save();
 
-        $activitat->save();
+            // Esborrar els horaris antics i afegir els nous
+            if ($request->has('horaris') && is_array($request->horaris)) {
+                $activitat->horaris()->delete();
+                foreach ($request->horaris as $horariData) {
+                    $activitat->horaris()->create([
+                        'hora_inici' => $horariData['hora_inici'],
+                        'hora_final' => $horariData['hora_final'] ?? null,
+                    ]);
+                }
+            }
 
-        return response()->json($activitat);
+            // Actualitzar les categories (crear-les si no existeixen)
+            $categoryIds = [];
+            foreach ($request->categories as $nomCategoria) {
+                $categoria = Categoria::firstOrCreate(['nom' => $nomCategoria]);
+                $categoryIds[] = $categoria->id;
+            }
+            $activitat->categories()->sync($categoryIds);
+
+            return $activitat;
+        });
+
+        // Esborrar categoria si no pertany a cap altra activitat
+        Categoria::doesntHave('activitats')->delete();
+
+        return response()->json($activitat->load(['horaris', 'categories']), 200);
     }
 
     /**
@@ -160,13 +212,16 @@ class ActivitatController extends Controller
     {
         $activitat = Activitat::findOrFail($id);
 
-        // Borrar imagen física
+        // Esborrar la imatge física del servidor abans d'eliminar l'activitat
         if ($activitat->imatge) {
             Storage::disk('public')->delete($activitat->imatge);
         }
 
         $activitat->delete();
 
-        return response()->json(['message' => 'Activitat eliminada'], 200);
+        // Esborrar categoria si no pertany a cap altra activitat
+        Categoria::doesntHave('activitats')->delete();
+
+        return response()->json(['message' => 'Activitat eliminada correctament'], 200);
     }
 }
