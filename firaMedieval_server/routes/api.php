@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ReservaAutocaravanaController;
 use App\Http\Controllers\Api\ActivitatController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AparcamentController;
+use App\Http\Controllers\Api\CategoriaController;
 
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
@@ -15,34 +17,34 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/activitats', [ActivitatController::class, 'index']);
 Route::get('/activitats/{activitat}', [ActivitatController::class, 'show']);
 
+// Rutes per a desplegables i filtres
+Route::get('/aparcaments', [AparcamentController::class, 'index']);
+Route::get('/categories', [CategoriaController::class, 'index']);
+
 
 // Rutes protegides
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Tancar sessió
+    // Autenticació
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [UserController::class, 'me']);
 
-    // Rutes de reserves d'autocaravanes
-    Route::apiResource('reserves', ReservaAutocaravanaController::class);
+    // Reserves d'autocaravanes
+    Route::get('/reserves', [ReservaAutocaravanaController::class, 'index']);
+    Route::post('/reserves', [ReservaAutocaravanaController::class, 'store']);
+    Route::get('/reserves/{id}', [ReservaAutocaravanaController::class, 'show']);
+    Route::delete('/reserves/{id}', [ReservaAutocaravanaController::class, 'cancel']);
 
-    // Rutes d'activitats per a l'administrador (crear, editar, esborrar)
+    // Activitats
     Route::post('/activitats', [ActivitatController::class, 'store']);
     Route::put('/activitats/{activitat}', [ActivitatController::class, 'update']);
     Route::delete('/activitats/{activitat}', [ActivitatController::class, 'destroy']);
 
-});
-
-Route::middleware('auth:sanctum')->group(function () {
-
-    // usuarios
+    // Gestió d'usuaris
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
-    // perfil propio
-    Route::get('/me', [UserController::class, 'me']);
-
 });
-
