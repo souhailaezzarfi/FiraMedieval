@@ -102,7 +102,7 @@ class UserController extends Controller
             return response()->json(['message' => 'No autoritzat'], 403);
         }
 
-        return User::with(['reservas', 'inscripcions'])->findOrFail($id);
+        return User::with(['reservaAutocaravana', 'inscripcionsActivitats'])->findOrFail($id);
     }
 
     /**
