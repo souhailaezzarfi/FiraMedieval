@@ -10,6 +10,8 @@ use App\Models\Activitat;
 
 class Inscripcio extends Model
 {
+
+    protected $table = 'inscripcions';
     protected $fillable = ['activitat_id', 'user_id', 'estat'];
 
     public function activitat()

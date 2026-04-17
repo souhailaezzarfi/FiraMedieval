@@ -43,7 +43,7 @@ class ActivitatController extends Controller
                 'aforament' => 'nullable|integer|min:1',
                 'categories' => 'required|array|min:1',
                 'categories.*' => 'required|string|max:50',
-                'horaris' => 'nullable|array',
+                'horaris' => 'required|array|min:1',
                 'horaris.*.hora_inici' => 'required_with:horaris|date',
                 'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -129,25 +129,30 @@ class ActivitatController extends Controller
 
         $request->validate(
             [
-                'nom' => 'sometimes|string|max:100',
-                'organitzador' => 'sometimes|string|max:100',
-                'descripcio' => 'sometimes|string',
-                'ubicacio' => 'sometimes|string|max:100',
+                'nom' => 'sometimes|required|string|max:100',
+                'organitzador' => 'sometimes|required|string|max:100',
+                'descripcio' => 'sometimes|required|string',
+                'ubicacio' => 'sometimes|required|string|max:100',
                 'aforament' => 'sometimes|nullable|integer|min:1',
-                'categories' => 'sometimes|array|min:1',
+                'categories' => 'sometimes|required|array|min:1',
                 'categories.*' => 'required|string|max:50',
-                'horaris' => 'sometimes|array',
+                'horaris' => 'sometimes|required|array|min:1',
                 'horaris.*.hora_inici' => 'required_with:horaris|date',
                 'horaris.*.hora_final' => 'nullable|date|after:horaris.*.hora_inici',
                 'imatge' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ],
             [
+                'nom.required' => 'El nom es obligatori.',
                 'nom.max' => 'El nom no pot superar els 100 caràcters.',
+                'organitzador.required' => 'Has d\'indicar qui organitza l\'activitat.',
+                'descripcio.required' => 'La descripció es obligatoria per als assistents.',
+
                 'aforament.integer' => 'L\'aforament ha de ser un nombre enter.',
                 'aforament.min' => 'L\'aforament ha de ser d\'almenys 1 persona.',
-                
+                'categories.required' => 'Has d\'indicar alguna categoria.',
+                'categories.min' => 'Has d\'indicar alguna categoria.',
                 'categories.*.max' => 'El nom de la categoria no pot superar els 50 caràcters.',
-                
+                'horaris.required' => 'Has d\'indicar algun horari.',
                 'horaris.*.hora_inici.required_with' => 'L\'hora d\'inici ha de ser indicada.',
                 'horaris.*.hora_final.after' => 'L\'hora de finalització ha de ser posterior a la d\'inici.',
                 'imatge.image' => 'El fitxer ha de ser una imatge.',

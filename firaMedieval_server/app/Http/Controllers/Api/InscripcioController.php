@@ -13,21 +13,29 @@ class InscripcioController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        if (!$user) return response()->json(['message' => 'No autoritzat'], 401);
 
-        // Admin => ve todo
+        $query = Inscripcio::with(['activitat']);
         if ($user->role === 'admin') {
-            return Inscripcio::with(['activitat', 'user'])->get();
+            $query->with('user');
         }
 
-        // Usuario normal => solo sus inscripciones
-        return Inscripcio::with('activitat')
-            ->where('user_id', Auth::id())
-            ->get();
+        // Si el frontend envía un 'activitat_id', filtramos la lista para que solo devuelva los inscritos en esa actividad concreta
+
+        if ($request->filled('activitat_id')) {
+            $query->where('activitat_id', $request->activitat_id);
+        }
+
+        // el usuario solo vea sus propias inscripciones
+
+        if ($user->role !== 'admin') {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -62,7 +70,10 @@ class InscripcioController extends Controller
             'estat' => $estat,
         ]);
 
-        return response()->json($inscripcio, 201);
+        return response()->json([
+            'inscripcio' => $inscripcio,
+            'message' => $estat === 'espera' ? 'Inscrit a la llista d\'espera' : 'Inscripció confirmada'
+        ], 201);
     }
 
     /**
@@ -80,30 +91,6 @@ class InscripcioController extends Controller
         return response()->json($inscripcio);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $user = Auth::user();
-
-        // Solo admin
-        if ($user->role !== 'admin') {
-            return response()->json(['message' => 'No autoritzat'], 403);
-        }
-
-        $request->validate([
-            'estat' => 'required|in:confirmada,espera,cancel·lada'
-        ]);
-
-        $inscripcio = Inscripcio::findOrFail($id);
-
-        $inscripcio->update([
-            'estat' => $request->estat
-        ]);
-
-        return response()->json($inscripcio);
-    }
 
     /**
      * Remove the specified resource from storage.
@@ -111,31 +98,33 @@ class InscripcioController extends Controller
     public function destroy(string $id)
     {
         $user = Auth::user();
-
         $inscripcio = Inscripcio::findOrFail($id);
 
-        // Si es admin => puede borrar cualquiera
-        if ($user->role === 'admin') {
-            $inscripcio->delete();
-            return response()->json(['message' => 'Inscripció cancel·lada']);
-        }
-
-        // Usuario normal => solo puede borrar la suya
-        if ($inscripcio->user_id !== $user->id) {
+        // Seguridad
+        if ($user->role !== 'admin' && $inscripcio->user_id !== $user->id) {
             return response()->json(['message' => 'No autoritzat'], 403);
         }
 
-        $inscripcio->delete();
+        // Evitar doble cancelación
+        if ($inscripcio->estat === 'cancel·lada') {
+            return response()->json(['message' => 'Ja està cancel·lada'], 422);
+        }
 
-        // Si se ha liberado una plaza al cancelar esta inscripción
-        // buscamos al primer usuario que estaba en lista de espera para esa actividad
-        $espera = Inscripcio::where('activitat_id', $inscripcio->activitat_id)
-            ->where('estat', 'espera')
-            ->orderBy('created_at', 'asc')
-            ->first();
+        $estatPrevi = $inscripcio->estat;
 
-        if ($espera) {
-            $espera->update(['estat' => 'confirmada']);
+        // NO BORRAR, solo cambiar estado
+        $inscripcio->update(['estat' => 'cancel·lada']);
+
+        // Si liberamos plaza
+        if ($estatPrevi === 'confirmada') {
+            $espera = Inscripcio::where('activitat_id', $inscripcio->activitat_id)
+                ->where('estat', 'espera')
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            if ($espera) {
+                $espera->update(['estat' => 'confirmada']);
+            }
         }
 
         return response()->json(['message' => 'Inscripció cancel·lada']);
