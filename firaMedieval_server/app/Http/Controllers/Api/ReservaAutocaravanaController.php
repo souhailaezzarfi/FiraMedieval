@@ -111,38 +111,38 @@ class ReservaAutocaravanaController extends Controller
     /**
      * Eliminar (cancel·lar) una reserva
      */
-    public function destroy(string $id)
+    public function cancel(string $id)
     {
         $user = Auth::user();
         $reserva = ReservaAutocaravana::findOrFail($id);
 
         // L'usuari normal només pot esborrar la seva pròpia reserva
-        if ($user->role !== 'admin' && $reserva->user_id !== $user->id) {
+        if ($user->role != 'admin' && $reserva->user_id != $user->id) {
             return response()->json(['message' => 'No autoritzat'], 403);
         }
 
         // Evitar processar reserves que ja han estat cancel·lades
-        if ($reserva->estat === 'cancel·lada') {
+        if ($reserva->estat == 'cancel·lada') {
             return response()->json(['message' => 'Aquesta reserva ja estava cancel·lada.'], 422);
         }
 
         $estatPrevi = $reserva->estat;
 
-        // En lloc d'esborrar de la BD, actualitzem l'estat a cancel·lada
+        // Actualitzem l'estat de la reserva a cancel·lada
         $reserva->update(['estat' => 'cancel·lada']);
 
-        // Només avancem la llista d'espera si la reserva que s'ha anul·lat estava confirmada
-        if ($estatPrevi === 'confirmada') {
-            $this->avancarLlistaEspera($reserva->aparcament_id);
+        // Si la reserva anul·lada estava prèviament confirmada, actualitzem la llista d'espera
+        if ($estatPrevi == 'confirmada') {
+            $this->actualitzarLlistaEspera($reserva->aparcament_id);
         }
 
         return response()->json(['message' => 'Reserva cancel·lada correctament'], 200);
     }
 
     /**
-     * Mètode privat per avançar la llista d'espera automàticament
+     * Funció per actualitzar la llista d'espera
      */
-    private function avancarLlistaEspera($aparcament_id)
+    private function actualitzarLlistaEspera($aparcament_id)
     {
         $seguentReserva = ReservaAutocaravana::where('aparcament_id', $aparcament_id)
             ->where('estat', 'espera')
