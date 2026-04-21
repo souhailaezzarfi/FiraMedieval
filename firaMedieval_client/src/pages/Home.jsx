@@ -29,15 +29,15 @@ function Home() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 text-center tracking-wide mb-1">
+    <div className="max-w-7xl mx-auto px-4 py-8 text-[#432918]">
+      <h1 className="text-5xl md:text-6xl font-serif font-bold text-center tracking-wide mb-1">
         XXIX FIRA MEDIEVAL D'HOSTALRIC
       </h1>
-      <h2 className="font-serif text-4xl font-bold text-gray-900 text-center tracking-wide mb-8">
+      <h2 className="font-serif text-4xl font-bold text-center tracking-wide mb-8">
         3 al 5 d'abril del 2026
       </h2>
 
-      <div className="relative w-full h-75 md:h-125 rounded-2xl overflow-hidden shadow-2xl mb-12 group">
+      <div className="relative max-w-5xl mx-auto h-75 md:h-100 rounded-2xl overflow-hidden shadow-2xl mb-12 group">
         {imatges.map((img, i) => (
           <div
             key={i}
@@ -78,8 +78,8 @@ function Home() {
         </div>
       </div>
 
-      <div className="mt-12 text-gray-700 max-w-4xl mx-auto text-justify">
-        <p className="text-lg font-bold mb-5">Viatgeu a l'època medieval!</p>
+      <div className="mt-12 max-w-5xl mx-auto text-justify">
+        <p className="text-2xl font-bold mb-5">Viatgeu a l'època medieval!</p>
         <p className="text-lg leading-relaxed mb-3">
           Hostalric acull una nova edició de la Fira Medieval, un esdeveniment
           que reviu l'esplendor històric del municipi, que va ser la capital del
@@ -90,11 +90,11 @@ function Home() {
           d'espectacles i activitats que us transportaran a l'edat mitjana!
         </p>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-10">
           <Link
             to="/activitats"
-            className="bg-transparent hover:bg-blue-600 text-blue-600 font-semibold 
-            hover:text-white py-2 px-4 border border-blue-600 hover:border-transparent rounded-full transition-colors"
+            className="bg-transparent hover:bg-[#ba5940] text-[#ba5940] font-semibold 
+            hover:text-white py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors"
           >
             Descobriu les activitats disponibles
           </Link>

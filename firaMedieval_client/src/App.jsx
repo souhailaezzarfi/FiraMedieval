@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#e1d7bc]">
         <Navbar />
 
         <main>
