@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-[1200px] mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex-1">
           <Link
             to="/"
-            className="font-serif font-bold text-xl text-gray-900 tracking-widest"
+            className="font-serif font-bold text-3xl text-gray-900 tracking-wide"
           >
-            FIRA MEDIEVAL
+            Fira Medieval
           </Link>
         </div>
 
@@ -42,8 +42,8 @@ function Navbar() {
             to="/perfil"
             className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
           >
-            <span className="material-symbols-outlined text-gray-600">
-              person
+            <span className="material-symbols-outlined text-gray-600 text-2xl">
+              &#xe7fd;
             </span>
           </Link>
         </div>

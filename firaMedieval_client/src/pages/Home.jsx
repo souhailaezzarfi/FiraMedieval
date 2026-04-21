@@ -1,7 +1,105 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+
 function Home() {
+  const imatges = [
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/358d9-medieval1.jpg",
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/eb833-Medieval_web-turisme_arquers.png",
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/33b0b-Medieval_web-turisme_graiatus.png",
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/7d02d-medieval7.jpg",
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/4c7c9-medieval6.jpg",
+    "https://www.turismehostalric.cat/wp-content/uploads/2024/03/0cfa1-medieval2.jpg",
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  const anterior = () => {
+    setIndex((prev) => (prev == 0 ? imatges.length - 1 : prev - 1));
+  };
+
+  const seguent = () => {
+    setIndex((prev) => (prev == imatges.length - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev === imatges.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="max-w-[1200px] mx-auto px-4 py-1">
-      <p className="mt-4 text-xl text-gray-600 font-bold">Pàgina d'inici</p>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 text-center tracking-wide mb-1">
+        XXIX FIRA MEDIEVAL D'HOSTALRIC
+      </h1>
+      <h2 className="font-serif text-4xl font-bold text-gray-900 text-center tracking-wide mb-8">
+        3 al 5 d'abril del 2026
+      </h2>
+
+      <div className="relative w-full h-75 md:h-125 rounded-2xl overflow-hidden shadow-2xl mb-12 group">
+        {imatges.map((img, i) => (
+          <div
+            key={i}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${i === index ? "opacity-100" : "opacity-0"}`}
+          >
+            <img
+              src={img}
+              alt={`Fira ${i}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+
+        <button
+          onClick={anterior}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10 flex items-center justify-center"
+          aria-label="Imatge anterior"
+        >
+          <span className="material-symbols-outlined text-3xl">&#xe5cb;</span>
+        </button>
+
+        <button
+          onClick={seguent}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10 flex items-center justify-center"
+          aria-label="Imatge següent"
+        >
+          <span className="material-symbols-outlined text-3xl">&#xe5cc;</span>
+        </button>
+
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {imatges.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-2 rounded-full transition-all ${i === index ? "w-8 bg-white" : "w-2 bg-white/50"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-12 text-gray-700 max-w-4xl mx-auto text-justify">
+        <p className="text-lg font-bold mb-5">Viatgeu a l'època medieval!</p>
+        <p className="text-lg leading-relaxed mb-3">
+          Hostalric acull una nova edició de la Fira Medieval, un esdeveniment
+          que reviu l'esplendor històric del municipi, que va ser la capital del
+          Vescomtat de Cabrera.
+        </p>
+        <p className="text-lg leading-relaxed mb-3">
+          Durant tres dies, podreu gaudir d'un gran mercat, així com
+          d'espectacles i activitats que us transportaran a l'edat mitjana!
+        </p>
+
+        <div className="flex justify-center">
+          <Link
+            to="/activitats"
+            className="bg-transparent hover:bg-blue-600 text-blue-600 font-semibold 
+            hover:text-white py-2 px-4 border border-blue-600 hover:border-transparent rounded-full transition-colors"
+          >
+            Descobriu les activitats disponibles
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
