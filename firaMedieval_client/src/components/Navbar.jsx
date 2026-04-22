@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="bg-[#d7b731] border-b border-[#432918] shadow-sm">
+    <nav className="bg-[#d7b731] border-b-2 border-[#432918] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex-1">
           <Link
@@ -40,7 +40,7 @@ function Navbar() {
         <div className="flex-1 flex justify-end">
           <Link
             to="/perfil"
-            className="w-10 h-10 rounded-full border border-[#432918] flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
+            className="w-10 h-10 rounded-full border-2 border-[#432918] flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
           >
             <span className="material-symbols-outlined text-[#432918] text-2xl">
               &#xe7fd;
