@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Aparcament;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AparcamentController extends Controller
 {
@@ -22,6 +23,7 @@ class AparcamentController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizeAdmin();
         $request->validate(
             [
                 'nom' => 'required|string|max:50|unique:aparcament,nom',
@@ -56,6 +58,7 @@ class AparcamentController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $this->authorizeAdmin();
         $request->validate(
             [
                 'nom' => 'sometimes|string|max:50|unique:aparcament,nom,' . $id,
@@ -89,8 +92,17 @@ class AparcamentController extends Controller
      */
     public function destroy(string $id)
     {
+        $this->authorizeAdmin();
         $aparcament = Aparcament::findOrFail($id);
         $aparcament->delete();
         return response()->json(['message' => 'Aparcament eliminada']);
+    }
+
+    private function authorizeAdmin()
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin') {
+            abort(403, 'Només els administradors poden gestionar aparcaments.');
+        }
     }
 }
