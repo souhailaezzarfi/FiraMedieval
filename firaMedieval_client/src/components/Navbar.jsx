@@ -39,7 +39,7 @@ function Navbar() {
 
         <div className="flex-1 flex justify-end">
           <Link
-            to="/perfil"
+            to="/login"
             className="w-10 h-10 rounded-full border border-[#432918] flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
           >
             <span className="material-symbols-outlined text-[#432918] text-2xl">
