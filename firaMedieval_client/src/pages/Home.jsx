@@ -100,8 +100,8 @@ function Home() {
           </Link>
         </div>
 
-        <div className="max-w-4xl mx-auto mt-16 mb-16">
-          <h3 className="text-3xl font-serif font-bold text-center [#432918] tracking-wide mb-6">
+        <div className="w-full mt-16 mb-16">
+          <h3 className="text-3xl font-serif font-bold text-center text-[#432918] tracking-wide mb-6">
             Reviu l'última edició
           </h3>
 
