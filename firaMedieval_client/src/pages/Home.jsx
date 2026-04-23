@@ -90,7 +90,7 @@ function Home() {
           d'espectacles i activitats que us transportaran a l'edat mitjana!
         </p>
 
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-8 mb-10">
           <Link
             to="/activitats"
             className="bg-transparent hover:bg-[#ba5940] text-[#ba5940] font-semibold 
