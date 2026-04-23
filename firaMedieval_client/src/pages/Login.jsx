@@ -17,7 +17,13 @@ function Login() {
       const response = await authService.login({ email, password });
       localStorage.setItem("token", response.data.token);
       login(response.data.user);
-      navigate("/");
+
+      if (response.data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/perfil");
+      }
+      
     } catch (err) {
       setError("Email o contrasenya incorrectes");
     }

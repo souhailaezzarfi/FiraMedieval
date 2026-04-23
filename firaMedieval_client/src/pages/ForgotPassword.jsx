@@ -14,7 +14,11 @@ function ForgotPassword() {
       await api.post("/forgot-password", { email });
       setSuccess(true);
     } catch (err) {
-      setError("No hem trobat cap compte amb aquest email.");
+      if (err.response?.status === 404) {
+        setError("No hem trobat cap compte amb aquest email.");
+      } else {
+        setError("Hi ha hagut un error. Torna-ho a intentar.");
+      }
     }
   };
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AparcamentController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\InscripcioController;
+use Illuminate\Support\Facades\Password;
 
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
@@ -21,6 +22,35 @@ Route::get('/activitats/{activitat}', [ActivitatController::class, 'show']);
 // Rutes per a desplegables i filtres
 Route::get('/aparcaments', [AparcamentController::class, 'index']);
 Route::get('/categories', [CategoriaController::class, 'index']);
+
+Route::post('/forgot-password', function (Request $request) {
+    $request->validate(['email' => 'required|email']);
+
+    $status = Password::sendResetLink($request->only('email'));
+
+    return $status === Password::RESET_LINK_SENT
+        ? response()->json(['message' => 'Email enviat'])
+        : response()->json(['message' => 'Email no trobat'], 404);
+});
+
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill(['password' => bcrypt($password)])->save();
+        }
+    );
+
+    return $status === Password::PASSWORD_RESET
+        ? response()->json(['message' => 'Contrasenya restablerta'])
+        : response()->json(['message' => 'Token invàlid'], 400);
+});
 
 
 // Rutes protegides
@@ -40,7 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reserves', [ReservaAutocaravanaController::class, 'store']);
     Route::get('/reserves/{id}', [ReservaAutocaravanaController::class, 'show']);
     Route::delete('/reserves/{id}', [ReservaAutocaravanaController::class, 'cancel']);
-    
+
     // Activitats
     Route::post('/activitats', [ActivitatController::class, 'store']);
     Route::put('/activitats/{activitat}', [ActivitatController::class, 'update']);
@@ -58,5 +88,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/inscripcions', [InscripcioController::class, 'store']);
     Route::get('/inscripcions/{id}', [InscripcioController::class, 'show']);
     Route::delete('/inscripcions/{id}', [InscripcioController::class, 'destroy']);
-
 });
