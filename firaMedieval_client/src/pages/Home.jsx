@@ -99,6 +99,23 @@ function Home() {
             Descobriu les activitats disponibles
           </Link>
         </div>
+
+        <div className="max-w-4xl mx-auto mt-16 mb-16">
+          <h3 className="text-3xl font-serif font-bold text-center [#432918] tracking-wide mb-6">
+            Reviu l'última edició
+          </h3>
+
+          <div className="overflow-hidden rounded-2xl shadow-2xl">
+            <iframe
+              className="w-full aspect-video"
+              src="https://www.youtube.com/embed/8qK-ztxb1G4"
+              title="Fira Medieval d'Hostalric 2025"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
       </div>
     </div>
   );
