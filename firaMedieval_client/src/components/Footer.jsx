@@ -4,7 +4,7 @@ import logoVescomtat from "../assets/logos/vescomtat-cabrera.png";
 
 function Footer() {
   return (
-    <footer className="bg-white border-t-2 border-[#432918] py-4">
+    <footer className="bg-[#D3C49C] border-t-2 border-[#432918] py-4">
       <div className="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center justify-items-center">
         <a
           href="https://www.hostalric.cat"
