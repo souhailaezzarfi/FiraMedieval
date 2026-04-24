@@ -79,7 +79,7 @@ function ResetPassword() {
 
               <button
                 type="submit"
-                className="bg-[#d7b731] text-white font-bold py-2 rounded hover:bg-[#ba5940] transition-colors"
+                className="bg-[#461615] text-white font-bold py-2 rounded hover:bg-[#461615]/90 transition-colors"
               >
                 Canviar contrasenya
               </button>
