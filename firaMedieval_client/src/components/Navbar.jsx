@@ -45,7 +45,7 @@ function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 text-[#432918] font-medium hover:text-white transition-colors"
+                className="h-10 px-4 rounded-full border-2 border-white flex items-center gap-2 text-white font-medium hover:bg-[#e1d7bc]/25 transition-colors"
               >
                 <span className="material-symbols-outlined text-2xl">
                   &#xe7fd;
@@ -59,7 +59,7 @@ function Navbar() {
                     to="/perfil"
                     className="block px-4 py-2 text-[#432918] hover:bg-gray-100"
                   >
-                  Perfil
+                    Perfil
                   </Link>
                   <button
                     onClick={() => {
@@ -76,9 +76,9 @@ function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="w-10 h-10 rounded-full border border-[#432918] flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
+              className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center hover:bg-[#e1d7bc]/25 transition-colors"
             >
-              <span className="material-symbols-outlined text-[#432918] text-2xl">
+              <span className="material-symbols-outlined text-white text-2xl">
                 &#xe7fd;
               </span>
             </Link>
