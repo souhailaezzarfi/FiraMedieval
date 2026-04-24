@@ -5,36 +5,36 @@ function Navbar() {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
-    <nav className="bg-[#d7b731] border-b border-[#432918] shadow-sm">
+    <nav className="bg-[#461615] border-b-2 border-[#432918] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex-1">
           <Link
             to="/"
-            className="font-serif font-bold text-3xl text-[#432918] tracking-wide"
+            className="font-serif font-bold text-3xl text-white tracking-wide"
           >
             Fira Medieval
           </Link>
         </div>
 
         <div className="flex gap-8 text-white font-bold tracking-wider text-lg justify-center">
-          <Link to="/" className="hover:text-[#ba5940] transition-colors">
+          <Link to="/" className="hover:text-[#EAD9B0] transition-colors">
             Inici
           </Link>
           <Link
             to="/activitats"
-            className="hover:text-[#ba5940] transition-colors"
+            className="hover:text-[#EAD9B0] transition-colors"
           >
             Activitats
           </Link>
           <Link
             to="/info-practica"
-            className="hover:text-[#ba5940] transition-colors"
+            className="hover:text-[#EAD9B0] transition-colors"
           >
             Informació pràctica
           </Link>
           <Link
             to="/contacte"
-            className="hover:text-[#ba5940] transition-colors"
+            className="hover:text-[#EAD9B0] transition-colors"
           >
             Contacte
           </Link>

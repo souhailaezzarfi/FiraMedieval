@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import hero from "../assets/hero.jpg";
 
 function Home() {
   const imatges = [
@@ -37,7 +38,7 @@ function Home() {
         3 al 5 d'abril del 2026
       </h2>
 
-      <div className="relative max-w-5xl mx-auto h-75 md:h-100 rounded-2xl overflow-hidden shadow-2xl mb-12 group">
+      <div className="relative mx-auto w-full md:h-110 rounded-2xl overflow-hidden shadow-2xl mb-12 group">
         {imatges.map((img, i) => (
           <div
             key={i}
@@ -90,14 +91,31 @@ function Home() {
           d'espectacles i activitats que us transportaran a l'edat mitjana!
         </p>
 
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-8 mb-10">
           <Link
             to="/activitats"
-            className="bg-transparent hover:bg-[#ba5940] text-[#ba5940] font-semibold 
-            hover:text-white py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors"
+            className="bg-[#461615] hover:bg-[#5a1d1b] text-white font-semibold 
+            hover:text-white py-2 px-4 border border-[#461615] hover:border-transparent rounded-full hover:scale-110 transition-transform"
           >
             Descobriu les activitats disponibles
           </Link>
+        </div>
+
+        <div className="w-full mt-16 mb-16">
+          <h3 className="text-3xl font-serif font-bold text-center text-[#432918] tracking-wide mb-6">
+            Reviu l'última edició
+          </h3>
+
+          <div className="overflow-hidden rounded-2xl shadow-2xl">
+            <iframe
+              className="w-full aspect-video"
+              src="https://www.youtube.com/embed/8qK-ztxb1G4"
+              title="Fira Medieval d'Hostalric 2025"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            ></iframe>
+          </div>
         </div>
       </div>
     </div>
