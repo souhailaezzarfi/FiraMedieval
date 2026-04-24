@@ -1,9 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState,useEffect, useRef } from "react";
 function Navbar() {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <nav className="bg-[#461615] border-b-2 border-[#432918] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -42,7 +55,7 @@ function Navbar() {
 
         <div className="flex-1 flex justify-end">
           {user ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="h-10 px-4 rounded-full border-2 border-white flex items-center gap-2 text-white font-medium hover:bg-[#e1d7bc]/25 transition-colors"
@@ -57,6 +70,7 @@ function Navbar() {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
                   <Link
                     to="/perfil"
+                    onClick={() => setIsDropdownOpen(false)}
                     className="block px-4 py-2 text-[#432918] hover:bg-gray-100"
                   >
                     Perfil
@@ -65,6 +79,7 @@ function Navbar() {
                     onClick={() => {
                       logout();
                       setIsDropdownOpen(false);
+                      navigate("/");
                     }}
                     className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
                   >
