@@ -3,6 +3,10 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import InfoPractica from "./pages/InfoPractica";
+import Login from "./pages/Login";
+import Register from "./pages/register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -19,6 +23,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/info-practica" element={<InfoPractica />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/password-reset/:token" element={<ResetPassword />} />
           </Routes>
         </main>
 
