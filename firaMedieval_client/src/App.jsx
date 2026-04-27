@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import InfoPractica from "./pages/InfoPractica";
+import Contacte from "./pages/Contacte";
 import Login from "./pages/Login";
 import Register from "./pages/register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/info-practica" element={<InfoPractica />} />
+            <Route path="/contacte" element={<Contacte />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
