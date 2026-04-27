@@ -1,4 +1,53 @@
+import { useState } from "react";
+import { z } from "zod";
+
+const contacteSchema = z.object({
+  nom: z.string().min(2, "El nom ha de tenir almenys 2 caràcters"),
+  telefon: z.string().optional(),
+  email: z.email("Introduïu una adreça de correu vàlida"),
+  missatge: z.string().min(10, "El missatge és massa curt"),
+});
+
 function Contacte() {
+  const [estatEnviament, setEstatEnviament] = useState("idle");
+  const [errors, setErrors] = useState({});
+
+  const gestionarEnviament = (e) => {
+    e.preventDefault();
+
+    const dadesFormulari = {
+      nom: e.target.nom.value,
+      telefon: e.target.telefon.value,
+      email: e.target.email.value,
+      missatge: e.target.missatge.value,
+    };
+
+    const resultatValidacio = contacteSchema.safeParse(dadesFormulari);
+
+    if (!resultatValidacio.success) {
+      const nousErrors = {};
+      resultatValidacio.error.issues.forEach((issue) => {
+        nousErrors[issue.path[0]] = issue.message;
+      });
+      setErrors(nousErrors);
+      return;
+    }
+
+    setErrors({});
+    setEstatEnviament("loading");
+
+    setTimeout(() => {
+      setEstatEnviament("success");
+    }, 2000);
+  };
+
+  const netejarError = (e) => {
+    const { name } = e.target;
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 text-[#432918]">
       <h1 className="text-5xl md:text-5xl font-serif font-bold text-center mb-12">
@@ -26,9 +75,14 @@ function Contacte() {
                     &#xe0c8;
                   </span>
                   <div className="flex flex-col gap-1.2 text-base">
-                    <span className="font-bold mb-1.5">
-                      La Domus - Can Llensa
-                    </span>
+                    <a
+                      href="https://maps.app.goo.gl/wwD2sNLiMt6HSrEx7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold mb-1.5 hover:text-[#ba5940] transition-colors"
+                    >
+                      Domus - Can Llensa
+                    </a>
                     <span className="font-normal">Carrer Raval, 45</span>
                     <span className="font-normal">17450 Hostalric</span>
                     <span className="font-normal">Girona</span>
@@ -138,17 +192,25 @@ function Contacte() {
 
             <form
               className="space-y-6 flex flex-col flex-1"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={gestionarEnviament}
+              noValidate
             >
               <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label htmlFor="nom" className="block text-sm font-bold mb-2">
-                    Nom i cognoms
+                    Nom i cognoms <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    name="nom"
                     id="nom"
-                    className="w-full px-4 py-3 border border-[#432918]/20 rounded-lg focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] transition-all bg-[#fdfaf3]/50"
+                    disabled={estatEnviament !== "idle"}
+                    onFocus={netejarError}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-[#fdfaf3]/50 disabled:opacity-60 disabled:cursor-not-allowed ${
+                      errors.nom
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
+                    }`}
                     placeholder="El vostre nom complet"
                   />
                 </div>
@@ -162,8 +224,11 @@ function Contacte() {
                   </label>
                   <input
                     type="tel"
+                    name="telefon"
                     id="telefon"
-                    className="w-full px-4 py-3 border border-[#432918]/20 rounded-lg focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] transition-all bg-[#fdfaf3]/50"
+                    disabled={estatEnviament !== "idle"}
+                    onFocus={netejarError}
+                    className="w-full px-4 py-3 border border-[#432918]/20 rounded-lg focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] transition-all bg-[#fdfaf3]/50 disabled:opacity-60 disabled:cursor-not-allowed"
                     placeholder="El vostre número de telèfon"
                   />
                 </div>
@@ -173,12 +238,19 @@ function Contacte() {
                     htmlFor="email"
                     className="block text-sm font-bold mb-2"
                   >
-                    Correu electrònic
+                    Correu electrònic <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
+                    name="email"
                     id="email"
-                    className="w-full px-4 py-3 border border-[#432918]/20 rounded-lg focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] transition-all bg-[#fdfaf3]/50"
+                    disabled={estatEnviament !== "idle"}
+                    onFocus={netejarError}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-[#fdfaf3]/50 disabled:opacity-60 disabled:cursor-not-allowed ${
+                      errors.email
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
+                    }`}
                     placeholder="La vostra adreça de correu"
                   />
                 </div>
@@ -188,12 +260,19 @@ function Contacte() {
                     htmlFor="missatge"
                     className="block text-sm font-bold mb-2"
                   >
-                    Missatge
+                    Missatge <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     id="missatge"
+                    name="missatge"
                     rows="6"
-                    className="w-full px-4 py-3 border border-[#432918]/20 rounded-lg focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] transition-all bg-[#fdfaf3]/50 resize-none"
+                    disabled={estatEnviament !== "idle"}
+                    onFocus={netejarError}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-[#fdfaf3]/50 resize-none disabled:opacity-60 disabled:cursor-not-allowed ${
+                      errors.missatge
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
+                    }`}
                     placeholder="Com us podem ajudar?"
                   ></textarea>
                 </div>
@@ -202,12 +281,58 @@ function Contacte() {
               <div className="flex justify-end mt-auto pt-6">
                 <button
                   type="submit"
-                  className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center"
+                  disabled={estatEnviament !== "idle"}
+                  className={`text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-2 shadow-md w-full sm:w-auto justify-center ${
+                    estatEnviament === "success"
+                      ? "bg-green-600 hover:bg-green-600 cursor-default"
+                      : estatEnviament === "loading"
+                        ? "bg-[#ba5940]/70 cursor-wait"
+                        : "bg-[#ba5940] hover:bg-[#432918]"
+                  }`}
                 >
-                  Enviar missatge
-                  <span className="material-symbols-outlined text-base">
-                    &#xe163;
-                  </span>
+                  {estatEnviament === "idle" && (
+                    <>
+                      Enviar missatge
+                      <span className="material-symbols-outlined text-base">
+                        &#xe163;
+                      </span>
+                    </>
+                  )}
+
+                  {estatEnviament === "loading" && (
+                    <>
+                      Enviant...
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    </>
+                  )}
+
+                  {estatEnviament === "success" && (
+                    <>
+                      Missatge enviat
+                      <span className="material-symbols-outlined text-xl">
+                        &#xe86c;
+                      </span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
