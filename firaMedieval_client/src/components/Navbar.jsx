@@ -18,7 +18,7 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-[#461615] border-b-2 border-[#432918] shadow-sm">
+    <nav className="bg-[#461615] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex-1">
           <Link
@@ -30,24 +30,24 @@ function Navbar() {
         </div>
 
         <div className="flex gap-8 text-white font-bold tracking-wider text-lg justify-center">
-          <Link to="/" className="hover:text-[#EAD9B0] transition-colors">
+          <Link to="/" className="hover:text-[#D4B06A] transition-colors">
             Inici
           </Link>
           <Link
             to="/activitats"
-            className="hover:text-[#EAD9B0] transition-colors"
+            className="hover:text-[#D4B06A] transition-colors"
           >
             Activitats
           </Link>
           <Link
             to="/info-practica"
-            className="hover:text-[#EAD9B0] transition-colors"
+            className="hover:text-[#D4B06A] transition-colors"
           >
             Informació pràctica
           </Link>
           <Link
             to="/contacte"
-            className="hover:text-[#EAD9B0] transition-colors"
+            className="hover:text-[#D4B06A] transition-colors"
           >
             Contacte
           </Link>
@@ -91,7 +91,7 @@ function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center hover:bg-[#e1d7bc]/25 transition-colors"
+              className="w-10 h-10 rounded-full border border-white flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
             >
               <span className="material-symbols-outlined text-white text-2xl">
                 &#xe7fd;
