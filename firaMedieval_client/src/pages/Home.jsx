@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import hero from "../assets/hero.jpg";
-import hero2 from "../assets/hero2.jpg";
 import marquee1 from "../assets/Marquee/InstiVescomtatDeCabrera.png";
 import marquee2 from "../assets/Marquee/logocatalunya.png";
 import marquee3 from "../assets/logos/turisme-hostalric.png";
