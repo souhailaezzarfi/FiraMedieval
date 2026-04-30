@@ -16,6 +16,8 @@ const inscripcioSchema = z.object({
 
 function InfoPractica() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
   const [formData, setFormData] = useState({
     marca: "",
     model: "",
@@ -39,6 +41,14 @@ function InfoPractica() {
       document.body.style.overflow = "unset";
     };
   }, [isModalOpen]);
+
+  const tancaModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsModalOpen(false);
+      setIsClosing(false);
+    }, 200);
+  };
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
@@ -108,19 +118,22 @@ function InfoPractica() {
       setEstatEnviament("success");
 
       setTimeout(() => {
-        setIsModalOpen(false);
-        setEstatEnviament("idle");
-        setFormData({
-          marca: "",
-          model: "",
-          matricula: "",
-          procedencia: "",
-          totalPersones: 1,
-          dataArribada: "",
-          dataSortida: "",
-          acceptoTermes: false,
-        });
-        setIsAltreMarca(false);
+        tancaModal();
+
+        setTimeout(() => {
+          setEstatEnviament("idle");
+          setFormData({
+            marca: "",
+            model: "",
+            matricula: "",
+            procedencia: "",
+            totalPersones: 1,
+            dataArribada: "",
+            dataSortida: "",
+            acceptoTermes: false,
+          });
+          setIsAltreMarca(false);
+        }, 200);
       }, 2000);
     }, 1500);
   };
@@ -245,15 +258,21 @@ function InfoPractica() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-            onClick={() =>
-              estatEnviament !== "loading" && setIsModalOpen(false)
-            }
+            className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${
+              isClosing ? "opacity-0" : "opacity-100"
+            }`}
+            onClick={() => estatEnviament !== "loading" && tancaModal()}
           ></div>
 
-          <div className="relative bg-[#fdfaf3] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl border border-[#432918]/10 p-6 sm:p-10 animate-[fadeIn_0.2s_ease-out]">
+          <div
+            className={`relative bg-[#fdfaf3] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl border border-[#432918]/10 p-6 sm:p-10 ${
+              isClosing
+                ? "animate-[fadeOut_0.2s_ease-in_forwards]"
+                : "animate-[fadeIn_0.2s_ease-out]"
+            }`}
+          >
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={tancaModal}
               disabled={estatEnviament === "loading"}
               className="absolute right-4 top-4 sm:right-6 sm:top-6 text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-50"
             >
@@ -576,6 +595,10 @@ function InfoPractica() {
         @keyframes fadeIn {
           from { opacity: 0; transform: scale(0.95) translateY(10px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; transform: scale(1) translateY(0); }
+          to { opacity: 0; transform: scale(0.95) translateY(10px); }
         }
       `}</style>
     </div>
