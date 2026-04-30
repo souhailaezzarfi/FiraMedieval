@@ -42,12 +42,12 @@ function Home() {
 
   return (
     <div className="w-full text-[#432918] bg-[#f7f2e8]">
-      <section className="h-screen w-full flex items-center bg-[#461615] text-white">
-        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 ">
+      <section className="relative h-screen w-full flex items-center bg-[#461615] text-white">
+        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 -translate-y-12 md:-translate-y-16">
           {/* LEFT */}
-          <div className="flex flex-col items-start justify-center -translate-y-10 ">
-            <div className="w-180 h-1 bg-[#EAD9B0] mb-4 rounded"></div>
-            <h1 className="text-5xl md:text-6xl font-serif font-bold mb-2">
+          <div className="flex flex-col items-start justify-center">
+            <div className="w-180 h-1 bg-[#EAD9B0] mb-6 rounded"></div>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4">
               XXIX FIRA MEDIEVAL D'HOSTALRIC
             </h1>
 
@@ -125,7 +125,7 @@ function Home() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center gap-1">
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center gap-1">
           <span>Scroll</span>
           <span>↓</span>
         </div>
