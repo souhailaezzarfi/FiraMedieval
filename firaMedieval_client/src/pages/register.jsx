@@ -74,12 +74,12 @@ function Register() {
     } catch (err) {
       if (err.response?.status === 422) {
         // Error de validació
-        setError(
+        setErrors(
           "Les dades introduïdes no són vàlides o el correu ja existeix.",
         );
       } else {
         // Error de connexió
-        setError("Hi ha hagut un error en el registre. Torna-ho a intentar.");
+        setErrors("Hi ha hagut un error en el registre. Torna-ho a intentar.");
       }
     }
   };
