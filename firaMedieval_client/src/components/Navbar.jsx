@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState,useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 function Navbar() {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,8 +18,8 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-[#461615] shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <nav className="bg-[#461615] border-b border-white/20 shadow-sm fixed top-0 left-0 w-full z-50">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center ">
         <div className="flex-1">
           <Link
             to="/"
@@ -30,27 +30,39 @@ function Navbar() {
         </div>
 
         <div className="flex gap-8 text-white font-bold tracking-wider text-lg justify-center">
-          <Link to="/" className="hover:text-[#D4B06A] transition-colors">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `transition-colors ${isActive ? "text-[#D4B06A]" : "hover:text-[#D4B06A]"}`
+            }
+          >
             Inici
-          </Link>
-          <Link
+          </NavLink>
+
+          <NavLink
             to="/activitats"
-            className="hover:text-[#D4B06A] transition-colors"
+            className={({ isActive }) =>
+              `transition-colors ${isActive ? "text-[#D4B06A]" : "hover:text-[#D4B06A]"}`
+            }
           >
             Activitats
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/info-practica"
-            className="hover:text-[#D4B06A] transition-colors"
+            className={({ isActive }) =>
+              `transition-colors ${isActive ? "text-[#D4B06A]" : "hover:text-[#D4B06A]"}`
+            }
           >
             Informació pràctica
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/contacte"
-            className="hover:text-[#D4B06A] transition-colors"
+            className={({ isActive }) =>
+              `transition-colors ${isActive ? "text-[#D4B06A]" : "hover:text-[#D4B06A]"}`
+            }
           >
             Contacte
-          </Link>
+          </NavLink>
         </div>
 
         <div className="flex-1 flex justify-end">
@@ -91,7 +103,7 @@ function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="w-10 h-10 rounded-full border border-white flex items-center justify-center hover:bg-[#e1d7bc] transition-colors"
+              className="w-10 h-10 rounded-full border border-white flex items-center justify-center hover:bg-[#D4B06A] transition-colors"
             >
               <span className="material-symbols-outlined text-white text-2xl">
                 &#xe7fd;

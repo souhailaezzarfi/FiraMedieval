@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import MasonryGallery from "../components/MasonryGallery";
 import hero from "../assets/hero.jpg";
-import hero2 from "../assets/hero2.jpg";
 import marquee1 from "../assets/Marquee/InstiVescomtatDeCabrera.png";
 import marquee2 from "../assets/Marquee/logocatalunya.png";
 import marquee3 from "../assets/logos/turisme-hostalric.png";
@@ -15,7 +15,7 @@ function Home() {
   const features = [
     {
       img: hero,
-      titulo: "Espectacles de Foc",
+      titulo: "Espectacles",
       descripcio:
         "Bruixes, dracs i malabaristes il·luminen la nit amb espectacles únics que et deixaran sense paraules.",
     },
@@ -43,6 +43,8 @@ function Home() {
 
   return (
     <div className="w-full text-[#432918] bg-[#f7f2e8]">
+
+      {/* HERO */}
       <section className="h-screen w-full flex items-center bg-[#461615] text-white">
         <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 ">
           {/* LEFT */}
@@ -132,31 +134,36 @@ function Home() {
         </div>
       </section>
 
-      <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0]">
-        <div className="flex w-max animate-marquee whitespace-nowrap">
-          {[
-            marquee1,
-            marquee2,
-            marquee3,
-            marquee4,
-            marquee5,
-            marquee1,
-            marquee2,
-            marquee3,
-            marquee4,
-            marquee5,
-            marquee1,
-            marquee2,
-            marquee3,
-            marquee4,
-            marquee5,
-          ].map((img, i) => (
-            <span key={i} className="mx-6 inline-flex items-center">
-              <img className="w-20 h-20 object-contain" src={img} />
-            </span>
-          ))}
+
+      {/* MARQUEE */}
+      <section>
+        <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0]">
+          <div className="flex w-max animate-marquee whitespace-nowrap">
+            {[
+              marquee1,
+              marquee2,
+              marquee3,
+              marquee4,
+              marquee5,
+              marquee1,
+              marquee2,
+              marquee3,
+              marquee4,
+              marquee5,
+              marquee1,
+              marquee2,
+              marquee3,
+              marquee4,
+              marquee5,
+            ].map((img, i) => (
+              <span key={i} className="mx-6 inline-flex items-center">
+                <img className="w-20 h-20 object-contain" src={img} />
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
 
       <section className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
@@ -222,7 +229,16 @@ function Home() {
           </div>
         </div>
       </section>
-      <div className=" max-w-5xl mx-auto text-justify">
+      
+
+      {/* GALERIA */}
+      <section>
+        <MasonryGallery />
+      </section>
+
+      {/* VIDEO */}
+      <section>
+      <div className=" max-w-7xl mx-auto text-justify">
         <div className="flex justify-center mt-2 mb-10"></div>
         <h3 className="text-5xl font-serif font-bold text-center text-[#432918] tracking-wide ">
           Reviu l'última edició
@@ -233,7 +249,7 @@ function Home() {
           <div className="overflow-hidden rounded-2xl shadow-2xl">
             <iframe
               className="w-full aspect-video"
-              src="https://www.youtube.com/embed/8qK-ztxb1G4"
+              src="https://www.youtube.com/embed/8qK-ztxb1G4?rel=0&modestbranding=1&autohide=1&quality=1080p"
               title="Fira Medieval d'Hostalric 2025"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
@@ -242,6 +258,8 @@ function Home() {
           </div>
         </div>
       </div>
+      </section>
+
     </div>
   );
 }
