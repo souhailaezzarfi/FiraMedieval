@@ -13,6 +13,10 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    if (!email || !password) {
+      setError("Si us plau, omple tots els camps.");
+      return;
+    }
     try {
       const response = await authService.login({ email, password });
       localStorage.setItem("token", response.data.token);
@@ -23,9 +27,12 @@ function Login() {
       } else {
         navigate("/perfil");
       }
-      
     } catch (err) {
-      setError("Email o contrasenya incorrectes");
+      if (err.response?.status === 401) {
+        setError("Correu electrònic o contrasenya incorrectes.");
+      } else {
+        setError("Error de connexió. Torna-ho a intentar més tard.");
+      }
     }
   };
 
@@ -51,21 +58,19 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#d7b731]"
-              required
+              className={`w-full border rounded px-3 py-2 focus:outline-none ${error ? "border-red-500" : "border-gray-300"}`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#432918] mb-1">
+            <label className="block text-sm font-medium text-[#432918] mb-1 ">
               Contrasenya
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-[#d7b731]"
-              required
+              className={`w-full border rounded px-3 py-2 focus:outline-none ${error ? "border-red-500" : "border-gray-300"}`}
             />
           </div>
 
