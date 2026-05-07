@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
+import Activitats from "./pages/Activitats";
 import InfoPractica from "./pages/InfoPractica";
 import Contacte from "./pages/Contacte";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ function App() {
         <main className="grow">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/activitats" element={<Activitats />} />
             <Route path="/info-practica" element={<InfoPractica />} />
             <Route path="/contacte" element={<Contacte />} />
             <Route path="/login" element={<Login />} />
