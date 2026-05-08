@@ -22,7 +22,6 @@ function Activitats() {
     const fetchActivitats = async () => {
       try {
         setCarregant(true);
-        // Suposem que la teva ruta a api.php és /activitats
         const response = await api.get("/activitats");
 
         const activitatsAplanades = [];
@@ -30,7 +29,8 @@ function Activitats() {
         response.data.forEach((act) => {
           if (act.horaris && act.horaris.length > 0) {
             act.horaris.forEach((horari) => {
-              const dataObj = new Date(horari.hora_inici);
+              const dataObj = new Date(horari.hora_inici.replace(" ", "T"));
+
               activitatsAplanades.push({
                 ...act,
                 id_unica: `${act.id}-${horari.id || Math.random()}`,
