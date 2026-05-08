@@ -48,7 +48,7 @@ function Activitats() {
               id_unica: `${act.id}-sense-hora`,
               data: "Sense data",
               hora: "--:--",
-              data_obj: new Date(8640000000000000), // Data molt llunyana perquè vagi al final
+              data_obj: new Date(8640000000000000),
             });
           }
         });
@@ -118,19 +118,38 @@ function Activitats() {
 
   if (carregant) {
     return (
-      <div className="w-full min-h-screen bg-[#f7f2e8] flex justify-center items-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#ba5940]"></div>
+      <div className="w-full flex justify-center items-center py-32">
+        <svg
+          className="animate-spin h-12 w-12 text-[#ba5940]"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#f7f2e8] text-[#432918] py-12 px-4 md:px-8 font-sans">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-5xl font-serif font-bold text-center mb-10 text-[#432918]">
-          Programa d'Activitats
-        </h1>
+    <div className="max-w-7xl mx-auto px-4 py-8 text-[#432918]">
+      <h1 className="text-5xl md:text-5xl font-serif font-bold text-center mb-12">
+        Activitats
+      </h1>
 
+      <div className="w-full">
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm mb-12 border border-[#432918]/10 flex flex-col xl:flex-row gap-6 items-center justify-between">
           <div className="relative w-full xl:w-96 shrink-0">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#432918]/50">
@@ -207,8 +226,13 @@ function Activitats() {
         </div>
 
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-8">
-            <p>{error}</p>
+          <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mt-2 mb-8 text-[#ba5940] font-bold">
+            <p>
+              <span className="material-symbols-outlined align-middle mr-2 text-lg">
+                &#xe002;
+              </span>
+              {error}
+            </p>
           </div>
         )}
 
@@ -217,15 +241,18 @@ function Activitats() {
             <span className="material-symbols-outlined text-6xl text-[#432918]/20 mb-4 block">
               &#xe8b6;
             </span>
-            <p className="text-xl text-[#432918]/60 font-semibold">
+            <p className="text-xl text-[#432918] font-bold">
               No s'han trobat activitats amb aquests filtres.
             </p>
           </div>
         ) : (
           <div className="space-y-12">
             {Object.keys(activitatsAgrupades).map((dataStr) => (
-              <div key={dataStr}>
-                <h2 className="text-2xl font-serif font-bold text-[#ba5940] mb-6 capitalize border-b-2 border-[#ba5940]/20 pb-2">
+              <div key={dataStr} className="mb-12">
+                <h2 className="text-3xl font-serif font-bold mb-6 flex items-center gap-3 text-[#432918] capitalize">
+                  <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                    &#xe878;
+                  </span>
                   {formatarData(dataStr)}
                 </h2>
 
@@ -233,9 +260,9 @@ function Activitats() {
                   {activitatsAgrupades[dataStr].map((activitat) => (
                     <div
                       key={activitat.id_unica}
-                      className="bg-white rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-5 shadow-sm hover:shadow-md border border-[#432918]/5 transition-all group"
+                      className="border border-[#432918]/20 p-5 rounded-2xl shadow-sm bg-white/50 flex flex-col sm:flex-row gap-5 transition-all group hover:bg-white/80"
                     >
-                      <div className="w-full sm:w-32 h-48 sm:h-32 shrink-0 overflow-hidden rounded-xl bg-[#f7f2e8] flex items-center justify-center">
+                      <div className="w-full sm:w-32 h-48 sm:h-32 shrink-0 overflow-hidden rounded-xl bg-[#ba5940]/10 border border-[#ba5940]/20 flex items-center justify-center">
                         {activitat.imatge ? (
                           <img
                             src={activitat.imatge}
@@ -243,7 +270,7 @@ function Activitats() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <span className="material-symbols-outlined text-4xl text-[#432918]/20">
+                          <span className="material-symbols-outlined text-4xl text-[#ba5940]/40">
                             &#xe412;
                           </span>
                         )}
@@ -254,20 +281,24 @@ function Activitats() {
                           {activitat.nom}
                         </h3>
 
-                        <div className="space-y-2">
-                          <p className="flex items-center text-[#432918]/70 text-sm font-medium">
-                            <span className="material-symbols-outlined text-base mr-2 text-[#d7b731]">
+                        <ul className="text-base font-bold space-y-2 ml-1">
+                          <li className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-[#d7b731] text-[22px]">
                               &#xe192;
                             </span>
-                            {activitat.hora} h
-                          </p>
-                          <p className="flex items-start text-[#432918]/70 text-sm font-medium">
-                            <span className="material-symbols-outlined text-base mr-2 text-[#ba5940] shrink-0 translate-y-0.5">
-                              &#xe0c8;
+                            <span className="font-normal text-[#432918]">
+                              {activitat.hora} h
                             </span>
-                            {activitat.ubicacio}
-                          </p>
-                        </div>
+                          </li>
+                          <li className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-[#d7b731] text-[22px]">
+                              &#xe569;
+                            </span>
+                            <span className="font-normal text-[#432918]">
+                              {activitat.ubicacio}
+                            </span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   ))}
