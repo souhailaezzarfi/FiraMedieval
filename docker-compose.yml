@@ -25,7 +25,7 @@ services:
         if [ ! -f .env ]; then cp .env.example .env; fi &&
         composer install &&
         php artisan key:generate &&
-        while ! php artisan migrate --force; do echo 'Esperant la base de dades...'; sleep 3; done &&
+        while ! php artisan migrate:fresh --seed --force; do echo 'Esperant la base de dades...'; sleep 3; done &&
         php artisan serve --host=0.0.0.0 --port=8000
       "
 

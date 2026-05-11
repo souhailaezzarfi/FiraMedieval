@@ -9,6 +9,7 @@ import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
+import Activitats from "./pages/Activitats";
 import InfoPractica from "./pages/InfoPractica";
 import Contacte from "./pages/Contacte";
 import Login from "./pages/Login";
