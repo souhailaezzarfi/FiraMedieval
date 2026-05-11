@@ -23,9 +23,9 @@ function Login() {
       login(response.data.user);
 
       if (response.data.user.role === "admin") {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/perfil");
+        navigate("/perfil", { replace: true });
       }
     } catch (err) {
       if (err.response?.status === 401) {

@@ -80,6 +80,15 @@ function Navbar() {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                  {user.role === "admin" && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="block px-4 py-2 text-[#432918] hover:bg-gray-100"
+                    >
+                      Panel d'administració
+                    </Link>
+                  )}
                   <Link
                     to="/perfil"
                     onClick={() => setIsDropdownOpen(false)}
