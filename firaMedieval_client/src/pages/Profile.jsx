@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import userService from "../services/userService";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { IoArrowBack } from "react-icons/io5";
+
 
 
 function Profile() {
-  const { user , logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nom: "",
@@ -89,6 +91,10 @@ function Profile() {
             <p className="text-sm opacity-75">{user?.email}</p>
           </div>
         </div>
+        <IoArrowBack
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 text-3xl text-white cursor-pointer"
+        />
       </div>
 
       <div className="max-w-4xl mx-auto px-6 pt-20 pb-12 space-y-8">
@@ -142,94 +148,92 @@ function Profile() {
           </form>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#d7b731]">
-                local_parking
-              </span>
-              <h3 className="text-lg font-bold text-[#432918]">
-                Les meves reserves
-              </h3>
-            </div>
-            <div className="p-6 space-y-3">
-              <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#d7b731]">
-                <div className="flex-1">
-                  <p className="font-semibold text-[#432918]">
-                    Reserva Autocaravana
-                  </p>
-                  <p className="text-sm text-[#8b6a4a] mt-0.5">
-                    Arribada: 03/04/2026
-                  </p>
-                </div>
-                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                  Confirmada
+        {user?.role !== "admin" && (
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#d7b731]">
+                  local_parking
                 </span>
+                <h3 className="text-lg font-bold text-[#432918]">
+                  Les meves reserves
+                </h3>
               </div>
-
-              <p className="text-sm text-[#8b6a4a] text-center pt-2">
-                No tens més reserves
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#d7b731]">
-                event_available
-              </span>
-              <h3 className="text-lg font-bold text-[#432918]">
-                Les meves inscripcions
-              </h3>
-            </div>
-            <div className="p-6 space-y-3">
-              <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#432918]">
-                <div className="flex-1">
-                  <p className="font-semibold text-[#432918]">
-                    Taller Medieval
-                  </p>
-                  <p className="text-sm text-[#8b6a4a] mt-0.5">
-                    Divendres 3 d'abril
-                  </p>
+              <div className="p-6 space-y-3">
+                <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#d7b731]">
+                  <div className="flex-1">
+                    <p className="font-semibold text-[#432918]">
+                      Reserva Autocaravana
+                    </p>
+                    <p className="text-sm text-[#8b6a4a] mt-0.5">
+                      Arribada: 03/04/2026
+                    </p>
+                  </div>
+                  <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                    Confirmada
+                  </span>
                 </div>
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
-                  En espera
-                </span>
+
+                <p className="text-sm text-[#8b6a4a] text-center pt-2">
+                  No tens més reserves
+                </p>
               </div>
+            </div>
 
-              <p className="text-sm text-[#8b6a4a] text-center pt-2">
-                No tens més inscripcions
-              </p>
+            <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#d7b731]">
+                  event_available
+                </span>
+                <h3 className="text-lg font-bold text-[#432918]">
+                  Les meves inscripcions
+                </h3>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#432918]">
+                  <div className="flex-1">
+                    <p className="font-semibold text-[#432918]">
+                      Taller Medieval
+                    </p>
+                    <p className="text-sm text-[#8b6a4a] mt-0.5">
+                      Divendres 3 d'abril
+                    </p>
+                  </div>
+                  <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
+                    En espera
+                  </span>
+                </div>
+
+                <p className="text-sm text-[#8b6a4a] text-center pt-2">
+                  No tens més inscripcions
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
-          <div className="px-8 py-5 border-b border-red-100 flex items-center gap-3">
-            <span className="material-symbols-outlined text-red-400">
-              warning
-            </span>
-            <h3 className="text-lg font-bold text-red-700">Zona de perill</h3>
-          </div>
-          <div className="p-8 flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-[#432918]">Eliminar compte</p>
-              <p className="text-sm text-[#8b6a4a]">
-                Aquesta acció és irreversible
-              </p>
+        {user?.role !== "admin" && (
+          <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
+            <div className="p-8 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-[#432918]">Eliminar compte</p>
+                <p className="text-sm text-[#8b6a4a]">
+                  Aquesta acció és irreversible
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  await handleDelete();
+                  logout();
+                  navigate("/");
+                }}
+                className="border-2 border-red-400 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-colors"
+              >
+                Eliminar compte
+              </button>
             </div>
-            <button
-              onClick={async () => {
-                await handleDelete();
-                logout();
-                navigate("/");
-              }}
-              className="border-2 border-red-400 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-colors"
-            >
-              Eliminar compte
-            </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

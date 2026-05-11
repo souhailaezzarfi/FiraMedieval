@@ -43,8 +43,8 @@ function Home() {
 
   return (
     <div className="w-full text-[#432918] bg-[#f7f2e8]">
-      <section className="relative h-screen w-full flex items-center bg-[#461615] text-white">
-        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 md:-translate-y-10">
+      <section className="relative h-screen w-full flex  bg-[#461615] text-white">
+        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 pt-12 md:pt-0">
           {/* LEFT */}
           <div className="flex flex-col items-start justify-center">
             <div className="w-180 h-1 bg-[#EAD9B0] mb-6 rounded"></div>
@@ -126,7 +126,7 @@ function Home() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center">
           <span>Scroll</span>
           <span>↓</span>
         </div>
