@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Activitats from "./pages/Activitats";
+import ActivitatDetall from "./pages/ActivitatDetall";
 import InfoPractica from "./pages/InfoPractica";
 import Contacte from "./pages/Contacte";
 import Login from "./pages/Login";
@@ -25,7 +26,7 @@ function PublicRoute() {
   return (
     <div className="min-h-screen flex flex-col bg-[#e1d7bc]">
       <Navbar />
-      <main className="grow">
+      <main className="grow pt-20">
         <Outlet />
       </main>
       <Footer />
@@ -50,6 +51,8 @@ function App() {
         {/* admin no puede entrar */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Home />} />
+          <Route path="/activitats" element={<Activitats />} />
+          <Route path="/activitats/:id" element={<ActivitatDetall />} />
           <Route path="/info-practica" element={<InfoPractica />} />
           <Route path="/contacte" element={<Contacte />} />
           <Route path="/login" element={<Login />} />
