@@ -195,19 +195,19 @@ function InfoPractica() {
 
           <ul className="text-base font-bold space-y-3 mb-8 ml-2">
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#d7b731]">
+              <span className="material-symbols-outlined text-[#461615]">
                 &#xe8b4;
               </span>
               Zona esportiva municipal (ZEM)
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#d7b731]">
+              <span className="material-symbols-outlined text-[#461615]">
                 &#xe570;
               </span>
               Estació de tren
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#d7b731]">
+              <span className="material-symbols-outlined text-[#461615]">
                 &#xe569;
               </span>
               Altres zones habilitades

@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 
 const formatarData = (dataString) => {
   if (dataString === "Sense data") return dataString;
   const opcions = { weekday: "long", day: "numeric", month: "long" };
   const data = new Date(dataString);
-  return data.toLocaleDateString("ca-ES", opcions);
+  const text = data.toLocaleDateString("ca-ES", opcions);
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
 function Activitats() {
@@ -17,6 +19,9 @@ function Activitats() {
   const [categoria, setCategoria] = useState("Totes");
   const [ubicacio, setUbicacio] = useState("Totes");
   const [ocultarFinalitzades, setOcultarFinalitzades] = useState(false);
+
+  // Comprovem si l'usuari ha iniciat sessió
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     const fetchActivitats = async () => {
@@ -249,7 +254,7 @@ function Activitats() {
           <div className="space-y-12">
             {Object.keys(activitatsAgrupades).map((dataStr) => (
               <div key={dataStr} className="mb-12">
-                <h2 className="text-3xl font-serif font-bold mb-6 flex items-center gap-3 text-[#432918] capitalize">
+                <h2 className="text-3xl font-serif font-bold mb-6 flex items-center gap-3 text-[#432918]">
                   <span className="material-symbols-outlined text-[#ba5940] text-3xl">
                     &#xe878;
                   </span>
@@ -258,9 +263,10 @@ function Activitats() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {activitatsAgrupades[dataStr].map((activitat) => (
-                    <div
+                    <Link
+                      to={`/activitats/${activitat.id}`}
                       key={activitat.id_unica}
-                      className="border border-[#432918]/20 p-5 rounded-2xl shadow-sm bg-white/50 flex flex-col sm:flex-row gap-5 transition-all group hover:bg-white/80"
+                      className="border border-[#432918]/20 p-5 rounded-2xl shadow-sm bg-white/50 flex flex-col sm:flex-row sm:items-center gap-5 transition-all group hover:bg-white/80 cursor-pointer"
                     >
                       <div className="w-full sm:w-32 h-48 sm:h-32 shrink-0 overflow-hidden rounded-xl bg-[#ba5940]/10 border border-[#ba5940]/20 flex items-center justify-center">
                         {activitat.imatge ? (
@@ -283,7 +289,7 @@ function Activitats() {
 
                         <ul className="text-base font-bold space-y-2 ml-1">
                           <li className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-[#d7b731] text-[22px]">
+                            <span className="material-symbols-outlined text-[#461615] text-[22px]">
                               &#xe192;
                             </span>
                             <span className="font-normal text-[#432918]">
@@ -291,7 +297,7 @@ function Activitats() {
                             </span>
                           </li>
                           <li className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-[#d7b731] text-[22px]">
+                            <span className="material-symbols-outlined text-[#461615] text-[22px]">
                               &#xe569;
                             </span>
                             <span className="font-normal text-[#432918]">
@@ -299,8 +305,42 @@ function Activitats() {
                             </span>
                           </li>
                         </ul>
+
+                        {/* Etiquetes d'inscripció segons estat (només si l'usuari té sessió iniciada) */}
+                        {activitat.aforament && isLoggedIn && (
+                          <div className="mt-4">
+                            {!activitat.inscripcio_usuari && (
+                              <div className="flex items-center gap-2 bg-green-100 text-green-800 w-fit px-3 py-1.5 rounded-lg text-sm font-bold border border-green-200">
+                                <span className="material-symbols-outlined text-[18px]">
+                                  &#xe86c;
+                                </span>
+                                Inscripcions obertes
+                              </div>
+                            )}
+
+                            {activitat.inscripcio_usuari?.estat ===
+                              "acceptada" && (
+                              <div className="flex items-center gap-2 bg-blue-100 text-blue-800 w-fit px-3 py-1.5 rounded-lg text-sm font-bold border border-blue-200">
+                                <span className="material-symbols-outlined text-[18px]">
+                                  &#xe86c;
+                                </span>
+                                Inscripció acceptada
+                              </div>
+                            )}
+
+                            {activitat.inscripcio_usuari?.estat ===
+                              "espera" && (
+                              <div className="flex items-center gap-2 bg-orange-100 text-orange-800 w-fit px-3 py-1.5 rounded-lg text-sm font-bold border border-orange-200">
+                                <span className="material-symbols-outlined text-[18px]">
+                                  &#xe192;
+                                </span>
+                                En llista d'espera
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
