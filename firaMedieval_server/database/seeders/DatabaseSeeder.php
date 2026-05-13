@@ -18,12 +18,16 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-        'nom'      => 'Admin',
-        'cognoms'  => 'Principal',
-        'email'    => 'admin@fira.com',
-        'password' => bcrypt('admin1234'),
-        'telefon'  => '600000000',
-        'role'     => 'admin',
-    ]); 
+            'nom' => 'Admin',
+            'cognoms' => 'Principal',
+            'email' => 'admin@fira.com',
+            'password' => bcrypt('admin1234'),
+            'telefon' => '600000000',
+            'role' => 'admin',
+        ]);
+
+        $this->call([
+            ActivitatsSeeder::class,
+        ]);
     }
 }
