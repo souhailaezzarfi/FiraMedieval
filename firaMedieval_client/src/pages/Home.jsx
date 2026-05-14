@@ -43,8 +43,8 @@ function Home() {
 
   return (
     <div className="w-full text-[#432918] bg-[#f7f2e8]">
-      <section className="relative h-screen w-full flex  bg-[#461615] text-white">
-        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 pt-12 md:pt-0">
+      <section className="relative h-[92vh] w-full flex items-center bg-[#461615] text-white">
+        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 md:pt-0 h-full">
           {/* LEFT */}
           <div className="flex flex-col items-start justify-center">
             <div className="w-180 h-1 bg-[#EAD9B0] mb-6 rounded"></div>
@@ -83,7 +83,7 @@ function Home() {
           </div>
 
           {/* RIGHT */}
-          <div className="flex items-center justify-center gap-6 mt-20">
+          <div className="flex items-center justify-center gap-6 mt-20 md:mt-0 h-full">
             <div className="relative w-100 h-100 md:w-200 md:h-150 rounded-3xl overflow-hidden shadow-2xl animate-fade-up">
               <img
                 src={hero}
@@ -132,7 +132,6 @@ function Home() {
         </div>
       </section>
 
-
       {/* MARQUEE */}
       <section>
         <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0]">
@@ -161,7 +160,6 @@ function Home() {
           </div>
         </div>
       </section>
-
 
       <section className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
@@ -227,7 +225,6 @@ function Home() {
           </div>
         </div>
       </section>
-      
 
       {/* GALERIA */}
       <section>
@@ -236,28 +233,27 @@ function Home() {
 
       {/* VIDEO */}
       <section>
-      <div className=" max-w-7xl mx-auto text-justify">
-        <div className="flex justify-center mt-2 mb-10"></div>
-        <h3 className="text-5xl font-serif font-bold text-center text-[#432918] tracking-wide ">
-          Reviu l'última edició
-        </h3>
-        <div className="w-20 h-1 bg-[#d7b731] mx-auto mt-6 rounded"></div>
+        <div className=" max-w-7xl mx-auto text-justify">
+          <div className="flex justify-center mt-2 mb-10"></div>
+          <h3 className="text-5xl font-serif font-bold text-center text-[#432918] tracking-wide ">
+            Reviu l'última edició
+          </h3>
+          <div className="w-20 h-1 bg-[#d7b731] mx-auto mt-6 rounded"></div>
 
-        <div className="w-full mt-12 pb-20">
-          <div className="overflow-hidden rounded-2xl shadow-2xl">
-            <iframe
-              className="w-full aspect-video"
-              src="https://www.youtube.com/embed/8qK-ztxb1G4?rel=0&modestbranding=1&autohide=1&quality=1080p"
-              title="Fira Medieval d'Hostalric 2025"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            ></iframe>
+          <div className="w-full mt-12 pb-20">
+            <div className="overflow-hidden rounded-2xl shadow-2xl">
+              <iframe
+                className="w-full aspect-video"
+                src="https://www.youtube.com/embed/8qK-ztxb1G4?rel=0&modestbranding=1&autohide=1&quality=1080p"
+                title="Fira Medieval d'Hostalric 2025"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
+            </div>
           </div>
         </div>
-      </div>
       </section>
-
     </div>
   );
 }
