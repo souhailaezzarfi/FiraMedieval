@@ -21,4 +21,9 @@ class HorariActivitat extends Model
     {
         return $this->belongsTo(Activitat::class, 'activitat_id');
     }
+
+    public function inscripcio_usuari()
+    {
+        return $this->hasOne(Inscripcio::class, 'horari_id')->where('user_id', auth()->id());
+    }
 }

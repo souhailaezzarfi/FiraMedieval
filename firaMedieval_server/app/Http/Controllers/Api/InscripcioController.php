@@ -17,8 +17,7 @@ class InscripcioController extends Controller
     {
         $user = Auth::user();
 
-
-        $query = Inscripcio::with(['activitat']);
+        $query = Inscripcio::with(['activitat', 'horari']);
         if ($user->role === 'admin') {
             $query->with('user');
         }
@@ -45,20 +44,23 @@ class InscripcioController extends Controller
     {
         $request->validate([
             'activitat_id' => 'required|exists:activitats,id',
+            'horari_id' => 'required|exists:horaris_activitat,id',
         ]);
 
         // Comprobar si ya está inscrito
         $jaInscrit = Inscripcio::where('activitat_id', $request->activitat_id)
+            ->where('horari_id', $request->horari_id) // NOU
             ->where('user_id', Auth::id())
             ->exists();
 
         if ($jaInscrit) {
-            return response()->json(['message' => 'Ja estàs inscrit a aquesta activitat'], 409);
+            return response()->json(['message' => 'Ja estàs inscrit a aquesta franja horària'], 409);
         }
 
         // Comprobar si hay plazas disponibles
         $activitat = Activitat::findOrFail($request->activitat_id);
         $inscrits = Inscripcio::where('activitat_id', $request->activitat_id)
+            ->where('horari_id', $request->horari_id)
             ->where('estat', 'confirmada')
             ->count();
 
@@ -66,6 +68,7 @@ class InscripcioController extends Controller
 
         $inscripcio = Inscripcio::create([
             'activitat_id' => $request->activitat_id,
+            'horari_id' => $request->horari_id,
             'user_id' => Auth::id(),
             'estat' => $estat,
         ]);
@@ -81,8 +84,7 @@ class InscripcioController extends Controller
      */
     public function show(string $id)
     {
-        $inscripcio = Inscripcio::with('activitat')->findOrFail($id);
-
+        $inscripcio = Inscripcio::with('activitat', 'horari')->findOrFail($id);
 
         if (Auth::user()->role !== 'admin' && $inscripcio->user_id !== Auth::id()) {
             return response()->json(['message' => 'No tens permís'], 403);
@@ -90,7 +92,6 @@ class InscripcioController extends Controller
 
         return response()->json($inscripcio);
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -117,7 +118,9 @@ class InscripcioController extends Controller
 
         // Si liberamos plaza
         if ($estatPrevi === 'confirmada') {
+            // Alliberar plaça per la llista d'espera en aquella franja horària
             $espera = Inscripcio::where('activitat_id', $inscripcio->activitat_id)
+                ->where('horari_id', $inscripcio->horari_id)
                 ->where('estat', 'espera')
                 ->orderBy('created_at', 'asc')
                 ->first();
