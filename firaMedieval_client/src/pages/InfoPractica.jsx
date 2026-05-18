@@ -1,22 +1,45 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
+import { FaCar, FaBus, FaTrain } from "react-icons/fa";
+import { FaCaravan } from "react-icons/fa6";
+import aparcamentService from "../services/aparcamentService";
+import reservaService from "../services/reservaAutocaravanaService";
+import { useAuth } from "../context/AuthContext";
 
 const inscripcioSchema = z.object({
   marca: z.string().min(1, "La marca és obligatòria"),
-  model: z.string().optional(),
+  model: z.string().min(1, "Model obligatòri"),
   matricula: z.string().min(1, "La matrícula és obligatòria"),
-  procedencia: z.string().optional(),
+  procedencia: z.string().min(1, "Procedencia obligatòria"),
   totalPersones: z.coerce.number().min(1, "Mínim 1 persona"),
   dataArribada: z.string().min(1, "Data obligatòria"),
   dataSortida: z.string().min(1, "Data obligatòria"),
-  acceptoTermes: z.literal(true, {
-    errorMap: () => ({ message: "Heu d'acceptar els termes i condicions" }),
+  acceptoTermes: z.boolean().refine((val) => val === true, {
+    message: "Heu d'acceptar els termes i condicions",
   }),
 });
 
+const tabs = [
+  { id: "cotxe", label: "Cotxe", icon: <FaCar /> },
+  { id: "tren", label: "Tren", icon: <FaTrain /> },
+  { id: "bus", label: "Bus", icon: <FaBus /> },
+  { id: "autocaravana", label: "Autocaravana", icon: <FaCaravan /> },
+];
+
 function InfoPractica() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabActiva = searchParams.get("tab") ?? "cotxe";
+
+  const setTabActiva = (tab) => setSearchParams({ tab });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
+  // NOU: estat de l'aparcament actiu
+  const [aparcamentActiu, setAparcamentActiu] = useState(null);
+  const [loadingAparcament, setLoadingAparcament] = useState(false);
 
   const [formData, setFormData] = useState({
     marca: "",
@@ -33,7 +56,6 @@ function InfoPractica() {
   const [errors, setErrors] = useState({});
   const [isAltreMarca, setIsAltreMarca] = useState(false);
 
-  // Bloquejar el scroll de la pàgina quan el modal està obert
   useEffect(() => {
     if (isModalOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "unset";
@@ -42,12 +64,36 @@ function InfoPractica() {
     };
   }, [isModalOpen]);
 
+  // consultar aparcament actiu quan s'entra al tab
+  useEffect(() => {
+    if (tabActiva !== "autocaravana") return;
+    setLoadingAparcament(true);
+    aparcamentService
+      .getActiu()
+      .then((res) => setAparcamentActiu(res.data))
+      .catch(() => setAparcamentActiu({ obert: false }))
+      .finally(() => setLoadingAparcament(false));
+  }, [tabActiva]);
+
   const tancaModal = () => {
     setIsClosing(true);
     setTimeout(() => {
       setIsModalOpen(false);
       setIsClosing(false);
+      setErrors({});
+      setEstatEnviament("idle");
     }, 200);
+  };
+
+  // comprova si l'usuari està logat abans d'obrir el modal
+  const handleObrirModal = () => {
+    if (!user) {
+      navigate("/login", {
+        state: { from: "/info-practica?tab=autocaravana" },
+      });
+      return;
+    }
+    setIsModalOpen(true);
   };
 
   const handleChange = (e) => {
@@ -56,20 +102,14 @@ function InfoPractica() {
       ...prev,
       [id]: type === "checkbox" ? checked : value,
     }));
-
-    if (errors[id]) {
-      setErrors((prev) => ({ ...prev, [id]: undefined }));
-    }
+    if (errors[id]) setErrors((prev) => ({ ...prev, [id]: undefined }));
   };
 
   const handleMarcaSelectChange = (e) => {
     if (e.target.value === "altre") {
-      e.target.options[e.target.selectedIndex].text = "";
       setIsAltreMarca(true);
       setFormData((prev) => ({ ...prev, marca: "" }));
-      if (errors.marca) {
-        setErrors((prev) => ({ ...prev, marca: undefined }));
-      }
+      if (errors.marca) setErrors((prev) => ({ ...prev, marca: undefined }));
     } else {
       handleChange(e);
     }
@@ -77,34 +117,27 @@ function InfoPractica() {
 
   const netejarError = (e) => {
     const { id } = e.target;
-    if (errors[id]) {
-      setErrors((prev) => ({ ...prev, [id]: undefined }));
-    }
+    if (errors[id]) setErrors((prev) => ({ ...prev, [id]: undefined }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     const resultatValidacio = inscripcioSchema.safeParse(formData);
     const nousErrors = {};
 
-    // 1. Agafem els errors de Zod
     if (!resultatValidacio.success) {
       resultatValidacio.error.issues.forEach((issue) => {
-        if (!nousErrors[issue.path[0]]) {
+        if (!nousErrors[issue.path[0]])
           nousErrors[issue.path[0]] = issue.message;
-        }
       });
     }
 
-    // Validació de dates
     if (formData.dataArribada && formData.dataSortida) {
       if (new Date(formData.dataSortida) < new Date(formData.dataArribada)) {
         nousErrors.dataSortida = "Error de dates";
       }
     }
 
-    // Si hi ha errors, no s'envia el formulari
     if (Object.keys(nousErrors).length > 0) {
       setErrors(nousErrors);
       return;
@@ -113,13 +146,24 @@ function InfoPractica() {
     setErrors({});
     setEstatEnviament("loading");
 
-    setTimeout(() => {
-      console.log("Dades d'inscripció a enviar:", formData);
-      setEstatEnviament("success");
+    try {
+      const res = await reservaService.create({
+        aparcament_id: aparcamentActiu.aparcament.id,
+        marca_vehicle: formData.marca,
+        model_vehicle: formData.model,
+        matricula: formData.matricula,
+        procedencia: formData.procedencia,
+        total_persones: formData.totalPersones,
+        data_arribada: formData.dataArribada,
+        data_sortida: formData.dataSortida,
+      });
+
+      //  diferenciar confirmada vs espera
+      const nouEstat = res.data.estat === "espera" ? "espera" : "success";
+      setEstatEnviament(nouEstat);
 
       setTimeout(() => {
         tancaModal();
-
         setTimeout(() => {
           setEstatEnviament("idle");
           setFormData({
@@ -135,126 +179,322 @@ function InfoPractica() {
           setIsAltreMarca(false);
         }, 200);
       }, 2000);
-    }, 1500);
+    } catch (err) {
+      setEstatEnviament("idle");
+      const msg = err.response?.data?.message ?? "";
+      if (msg.toLowerCase().includes("ja tens una reserva")) {
+        setErrors({
+          general:
+            "Ja tens una reserva activa. Només es permet una reserva per usuari.",
+        });
+      } else if (err.response?.data?.errors) {
+        const backendErrors = err.response.data.errors;
+        const nousErrors = {};
+        if (backendErrors.model_vehicle)
+          nousErrors.model = backendErrors.model_vehicle[0];
+        if (backendErrors.procedencia)
+          nousErrors.procedencia = backendErrors.procedencia[0];
+        if (backendErrors.marca_vehicle)
+          nousErrors.marca = backendErrors.marca_vehicle[0];
+        if (backendErrors.matricula)
+          nousErrors.matricula = backendErrors.matricula[0];
+        if (backendErrors.total_persones)
+          nousErrors.totalPersones = backendErrors.total_persones[0];
+        if (backendErrors.data_arribada)
+          nousErrors.dataArribada = backendErrors.data_arribada[0];
+        if (backendErrors.data_sortida)
+          nousErrors.dataSortida = backendErrors.data_sortida[0];
+        setErrors(nousErrors);
+      } else {
+        setErrors({
+          general:
+            "Hi ha hagut un error en enviar la reserva. Torna-ho a intentar.",
+        });
+      }
+    }
   };
+  const inputClass = (field) =>
+    `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
+      errors[field]
+        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
+    }`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 text-[#432918] relative">
-      <h1 className="text-5xl md:text-5xl font-serif font-bold text-center mb-12">
+      <h1 className="text-5xl font-serif font-bold text-center mb-12">
         Informació pràctica
       </h1>
 
-      <div className="max-w-5xl mx-auto text-justify">
-        <div className="mb-4">
-          <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#ba5940] text-3xl">
-              &#xeb3c;
-            </span>
-            Aparcament per autocaravanes
-          </h2>
-          <p className="text-lg leading-relaxed mb-4">
-            L'Ajuntament d'Hostalric habilitarà una zona d'aparcament per
-            autocaravanes (sense serveis) a la zona esportiva.
-          </p>
-
-          <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mt-2">
-            <p className="text-base font-bold text-[#ba5940]">
-              <span className="material-symbols-outlined align-middle mr-2 text-lg">
-                &#xe002;
-              </span>
-              Les places són limitades i s'assignaran per rigorós ordre
-              d'inscripció.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex justify-center md:justify-start mb-12">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold 
-              py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center"
-          >
-            Inscriviu-vos a l'aparcament
-            <span className="material-symbols-outlined text-base">
-              &#xe163;
-            </span>
-          </button>
-        </div>
-
-        <div className="mb-12">
-          <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#ba5940] text-3xl">
-              &#xe531;
-            </span>
-            Aparcaments per turismes
-          </h2>
-          <p className="text-lg leading-relaxed mb-4">
-            Per facilitar l'accés a la fira, s'habilitaran aparcaments gratuïts
-            en diversos punts del municipi:
-          </p>
-
-          <ul className="text-base font-bold space-y-3 mb-8 ml-2">
-            <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#461615]">
-                &#xe8b4;
-              </span>
-              Zona esportiva municipal (ZEM)
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#461615]">
-                &#xe570;
-              </span>
-              Estació de tren
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#461615]">
-                &#xe569;
-              </span>
-              Altres zones habilitades
-            </li>
-          </ul>
-
-          <div className="border border-[#432918]/20 p-6 rounded-2xl shadow-sm bg-white/50">
-            <p className="text-lg leading-relaxed mb-3">
-              S'habilitarà un servei de trenet llançadora per facilitar l'accés
-              a les persones que aparquin a la{" "}
-              <strong>zona esportiva municipal (ZEM)</strong>, podent fer el
-              desplaçament fins a la plaça de l'escola, punt d'inici de la Fira,
-              amb el trenet d'enllaç.
-            </p>
-            <p className="text-lg font-bold text-[#ba5940]">
-              Aquest servei té un cost de 2€ per trajecte.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-12 max-w-5xl mx-auto text-justify">
-          <p className="text-2xl font-bold text-center mb-5">
-            Veniu a gaudir de la Fira Medieval d'Hostalric i descobriu la màgia
-            de l'època medieval!
-          </p>
-          <p className="text-lg leading-relaxed text-center mb-3">
-            Aquí podeu consultar el programa de la XXIX Fira Medieval
-            d'Hostalric.
-          </p>
-
-          <div className="flex justify-center mt-8 mb-10">
-            <a
-              href="https://www.turismehostalric.cat/wp-content/uploads/2026/03/Versio-mobil-medieval-def.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="bg-transparent hover:bg-[#ba5940] text-[#ba5940] font-semibold 
-              hover:text-white py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors flex items-center gap-2"
+      <div className="max-w-5xl mx-auto">
+        {/* TABS */}
+        <div className="flex gap-3 flex-wrap mb-8 justify-center">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setTabActiva(tab.id)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-semibold text-sm transition-all ${
+                tabActiva === tab.id
+                  ? "bg-[#432918] text-white border-[#432918]"
+                  : "bg-white/50 text-[#432918] border-[#432918]/30 hover:border-[#432918]"
+              }`}
             >
-              Consulteu el programa
-              <span className="material-symbols-outlined text-base">
-                &#xe89e;
+              <span className="material-symbols-outlined text-base leading-none">
+                {tab.icon}
               </span>
-            </a>
-          </div>
+              {tab.label}
+            </button>
+          ))}
         </div>
+
+        {/* COTXE */}
+        {tabActiva === "cotxe" && (
+          <div className="space-y-6 text-justify">
+            <div>
+              <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                  <FaCar />
+                </span>
+                Aparcaments per turismes
+              </h2>
+              <p className="text-lg leading-relaxed mb-4">
+                Per facilitar l'accés a la fira, s'habilitaran aparcaments
+                gratuïts en diversos punts del municipi:
+              </p>
+              <ul className="text-base font-bold space-y-3 mb-8 ml-2">
+                <li className="flex items-center gap-3">
+                  Zona esportiva municipal (ZEM)
+                </li>
+                <li className="flex items-center gap-3">Estació de tren</li>
+                <li className="flex items-center gap-3">
+                  Altres zones habilitades
+                </li>
+              </ul>
+              <div className="border border-[#432918]/20 p-6 rounded-2xl shadow-sm bg-white/50">
+                <p className="text-lg leading-relaxed mb-3">
+                  S'habilitarà un servei de trenet llançadora per facilitar
+                  l'accés a les persones que aparquin a la{" "}
+                  <strong>zona esportiva municipal (ZEM)</strong>, podent fer el
+                  desplaçament fins a la plaça de l'escola, punt d'inici de la
+                  Fira.
+                </p>
+                <p className="text-lg font-bold text-[#ba5940]">
+                  Aquest servei té un cost de 2€ per trajecte.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TREN */}
+        {tabActiva === "tren" && (
+          <div className="space-y-6 text-justify">
+            <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                <FaTrain />
+              </span>
+              Tren
+            </h2>
+
+            <div className="bg-[#432918]/5 border border-[#432918]/15 rounded-2xl p-5">
+              <p className="text-sm text-[#432918]/70 italic">
+                Horaris subjectes a modificacions. Consulteu la web o app de
+                Rodalies.
+                <a
+                  href="https://www.renfe.com/es"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline font-bold ml-2 hover:text-[#ba5940]  transition-colors"
+                >
+                  www.renfe.com
+                </a>
+              </p>
+            </div>
+
+            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-1">
+                    Recomanada
+                  </p>
+                  <h3 className="text-xl font-serif font-bold mb-2">
+                    R11 · Barcelona Sants ↔ Portbou
+                  </h3>
+                  <p className="text-base leading-relaxed text-[#432918]/80">
+                    Línia principal amb parada a Hostalric. És l'opció
+                    recomanada per venir en tren a la Fira.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <a
+                  href="https://rodalies.gencat.cat/web/.content/02_Horaris/horaris/R11.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                >
+                  Consultar horaris R11
+                  <span className="material-symbols-outlined text-base">
+                    &#xe89e;
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-1">
+                Horari limitat
+              </p>
+              <h3 className="text-xl font-serif font-bold mb-2">
+                R2 · Barcelona Sants ↔ Maçanet-Massanes
+              </h3>
+              <p className="text-base leading-relaxed text-[#432918]/80">
+                Aquesta línia passa per Hostalric únicament al matí, a la tarda
+                o a la nit — pràcticament fora de l'horari de la Fira. No és
+                l'opció recomanada.
+              </p>
+              <div className="mt-4">
+                <a
+                  href="https://rodalies.gencat.cat/web/.content/02_Horaris/horaris/R2.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                >
+                  Consultar horaris R2
+                  <span className="material-symbols-outlined text-base">
+                    &#xe89e;
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BUS */}
+        {tabActiva === "bus" && (
+          <div className="space-y-6 text-justify">
+            <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                <FaBus />
+              </span>
+              Bus
+            </h2>
+
+            <div className="bg-[#432918]/5 border border-[#432918]/15 rounded-2xl p-5">
+              <p className="text-sm text-[#432918]/70 italic">
+                Horaris subjectes a modificacions. Consulteu{" "}
+                <a
+                  href="https://www.teisa-bus.com/ca/rutes"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-[#ba5940] ml-2 transition-colors font-bold"
+                >
+                  teisa-bus.com
+                </a>
+                .
+              </p>
+            </div>
+
+            {[
+              {
+                linia: "Línia 55",
+                ruta: "Sant Hilari – Girona (per Mallorquines) / Breda – Girona (per AP-7)",
+                url: "https://drive.google.com/file/d/1y32QwbnFJ66xF-6SPe13uJvyQfsxOZxB/view?usp=sharing",
+              },
+              {
+                linia: "Línia 66",
+                ruta: "Breda – Riells – Hostalric – Maçanet – Vidreres – Santa Coloma de Farners",
+                url: "https://drive.google.com/file/d/18eGS7FFtWgAg0omPu0qtcq-aHDZoYgmZ/view?usp=sharing",
+              },
+              {
+                linia: "Línia 77",
+                ruta: "Hostalric – Sant Hilari Sacalm – Vic",
+                url: "https://drive.google.com/file/d/1Aaten1WdPrKLLs3tm-kx4NgeaAIh6xwu/view?usp=sharing",
+              },
+            ].map((b) => (
+              <div
+                key={b.linia}
+                className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50"
+              >
+                <h3 className="text-xl font-serif font-bold mb-1">
+                  {b.linia} · Teisa
+                </h3>
+                <p className="text-base text-[#432918]/80 mb-4">{b.ruta}</p>
+
+                <a
+                  href={b.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                >
+                  Consultar horaris
+                  <span className="material-symbols-outlined text-base">
+                    &#xe89e;
+                  </span>
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* AUTOCARAVANA */}
+        {tabActiva === "autocaravana" && (
+          <div className="space-y-6 text-justify">
+            <div>
+              <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                  <FaCaravan />
+                </span>
+                Aparcament per autocaravanes
+              </h2>
+              <p className="text-lg leading-relaxed mb-4">
+                L'Ajuntament d'Hostalric habilitarà una zona d'aparcament per
+                autocaravanes (sense serveis) a la zona esportiva.
+              </p>
+              <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mb-8">
+                <p className="text-base font-bold text-[#ba5940]">
+                  Les places són limitades i s'assignaran per rigorós ordre
+                  d'inscripció.
+                </p>
+              </div>
+
+              {/* estat de les reserves segons l'aparcament actiu */}
+              {loadingAparcament ? (
+                <p className="text-[#432918]/60 text-sm">
+                  Comprovant disponibilitat...
+                </p>
+              ) : !aparcamentActiu?.obert ? (
+                <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50 text-center">
+                  <p className="text-xl font-serif font-bold text-[#432918]/50">
+                    Les reserves estan tancades en aquest moment.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {errors.general && (
+                    <p className="text-red-500 text-xs mb-4">
+                      {errors.general}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleObrirModal}
+                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center"
+                  >
+                    {user
+                      ? "Inscriviu-vos a l'aparcament"
+                      : "Inicia sessió per inscriure't"}
+                    <span className="material-symbols-outlined text-base">
+                      &#xe163;
+                    </span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* MODAL FORMULARI */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           <div
@@ -262,7 +502,7 @@ function InfoPractica() {
               isClosing ? "opacity-0" : "opacity-100"
             }`}
             onClick={() => estatEnviament !== "loading" && tancaModal()}
-          ></div>
+          />
 
           <div
             className={`relative bg-[#fdfaf3] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl border border-[#432918]/10 p-6 sm:p-10 ${
@@ -285,12 +525,20 @@ function InfoPractica() {
               Inscripció a l'aparcament d'autocaravanes
             </h2>
 
+            {/* NOU: error general del backend dins el modal */}
+            {errors.general && (
+              <p className="text-red-500 text-xs mb-4 text-center">
+                {errors.general}
+              </p>
+            )}
+
             <form
               className="space-y-6 flex flex-col w-full text-justify"
               onSubmit={handleSubmit}
               noValidate
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 items-start">
+                {/* MARCA */}
                 <div>
                   <label
                     htmlFor="marca"
@@ -298,7 +546,6 @@ function InfoPractica() {
                   >
                     Marca <span className="text-red-500">*</span>
                   </label>
-
                   {isAltreMarca ? (
                     <div className="relative w-full">
                       <input
@@ -308,11 +555,7 @@ function InfoPractica() {
                         onChange={handleChange}
                         onFocus={netejarError}
                         disabled={estatEnviament !== "idle"}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white pr-12 disabled:opacity-60 disabled:cursor-not-allowed ${
-                          errors.marca
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                            : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                        }`}
+                        className={inputClass("marca")}
                         placeholder="Escriviu la marca"
                         autoFocus
                       />
@@ -324,7 +567,6 @@ function InfoPractica() {
                         }}
                         disabled={estatEnviament !== "idle"}
                         className="absolute right-3 top-0 bottom-0 h-full flex items-center justify-center text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-60"
-                        title="Tornar al llistat de marques"
                       >
                         <span className="material-symbols-outlined text-2xl font-bold">
                           &#xe5cd;
@@ -339,12 +581,9 @@ function InfoPractica() {
                         onChange={handleMarcaSelectChange}
                         onFocus={netejarError}
                         disabled={estatEnviament !== "idle"}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white appearance-none pr-10 disabled:opacity-60 disabled:cursor-not-allowed ${
-                          errors.marca
-                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                            : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                        }`}
-                        required
+                        className={
+                          inputClass("marca") + " appearance-none pr-10"
+                        }
                       >
                         <option value="" disabled>
                           Selecciona
@@ -361,14 +600,18 @@ function InfoPractica() {
                       </span>
                     </div>
                   )}
+                  {errors.marca && (
+                    <p className="text-red-500 text-xs mt-1">{errors.marca}</p>
+                  )}
                 </div>
 
+                {/* MODEL */}
                 <div>
                   <label
                     htmlFor="model"
                     className="block text-sm font-bold mb-2"
                   >
-                    Model
+                    Model <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -377,15 +620,17 @@ function InfoPractica() {
                     onChange={handleChange}
                     onFocus={netejarError}
                     disabled={estatEnviament !== "idle"}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                      errors.model
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                    }`}
+                    className={inputClass("model")}
                     placeholder="El vostre model"
                   />
+                  {errors.model && (
+                    <p className="text-red-500 text-xs mt-1 text-center md:text-left">
+                      {errors.model}
+                    </p>
+                  )}
                 </div>
 
+                {/* MATRÍCULA */}
                 <div>
                   <label
                     htmlFor="matricula"
@@ -400,22 +645,23 @@ function InfoPractica() {
                     onChange={handleChange}
                     onFocus={netejarError}
                     disabled={estatEnviament !== "idle"}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                      errors.matricula
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                    }`}
+                    className={inputClass("matricula")}
                     placeholder="La vostra matrícula"
-                    required
                   />
+                  {errors.matricula && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.matricula}
+                    </p>
+                  )}
                 </div>
 
+                {/* PROCEDÈNCIA */}
                 <div>
                   <label
                     htmlFor="procedencia"
                     className="block text-sm font-bold mb-2"
                   >
-                    Procedència
+                    Procedència <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -424,15 +670,17 @@ function InfoPractica() {
                     onChange={handleChange}
                     onFocus={netejarError}
                     disabled={estatEnviament !== "idle"}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                      errors.procedencia
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                    }`}
+                    className={inputClass("procedencia")}
                     placeholder="La vostra procedència"
                   />
+                  {errors.procedencia && (
+                    <p className="text-red-500 text-xs mt-1 text-center md:text-left">
+                      {errors.procedencia}
+                    </p>
+                  )}
                 </div>
 
+                {/* PERSONES + DATES */}
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-6 items-start">
                   <div>
                     <label
@@ -449,15 +697,14 @@ function InfoPractica() {
                       onFocus={netejarError}
                       disabled={estatEnviament !== "idle"}
                       min="1"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                        errors.totalPersones
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                          : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                      }`}
-                      required
+                      className={inputClass("totalPersones")}
                     />
+                    {errors.totalPersones && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.totalPersones}
+                      </p>
+                    )}
                   </div>
-
                   <div>
                     <label
                       htmlFor="dataArribada"
@@ -472,15 +719,14 @@ function InfoPractica() {
                       onChange={handleChange}
                       onFocus={netejarError}
                       disabled={estatEnviament !== "idle"}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                        errors.dataArribada
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                          : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                      }`}
-                      required
+                      className={inputClass("dataArribada")}
                     />
+                    {errors.dataArribada && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.dataArribada}
+                      </p>
+                    )}
                   </div>
-
                   <div>
                     <label
                       htmlFor="dataSortida"
@@ -495,16 +741,17 @@ function InfoPractica() {
                       onChange={handleChange}
                       onFocus={netejarError}
                       disabled={estatEnviament !== "idle"}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
-                        errors.dataSortida
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                          : "border-[#432918]/20 focus:border-[#ba5940] focus:ring-[#ba5940]"
-                      }`}
-                      required
+                      className={inputClass("dataSortida")}
                     />
+                    {errors.dataSortida && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.dataSortida}
+                      </p>
+                    )}
                   </div>
                 </div>
 
+                {/* TERMES */}
                 <div className="md:col-span-2 mt-6">
                   <div className="flex items-center gap-3 justify-center md:justify-start">
                     <input
@@ -514,47 +761,51 @@ function InfoPractica() {
                       onChange={handleChange}
                       disabled={estatEnviament !== "idle"}
                       className="h-5 w-5 border border-[#432918]/20 rounded bg-white text-[#ba5940] focus:ring-[#ba5940] disabled:opacity-60 disabled:cursor-not-allowed"
-                      required
                     />
                     <label
                       htmlFor="acceptoTermes"
-                      className={`text-base text-center md:text-left ${
-                        errors.acceptoTermes ? "text-red-500" : "text-[#432918]"
-                      }`}
+                      className={`text-base ${errors.acceptoTermes ? "text-red-500" : "text-[#432918]"}`}
                     >
                       Accepto els termes i condicions{" "}
                       <span className="text-red-500">*</span>
                     </label>
                   </div>
+                  {errors.acceptoTermes && (
+                    <p className="text-red-500 text-xs mt-1 text-center md:text-left">
+                      {errors.acceptoTermes}
+                    </p>
+                  )}
                 </div>
               </div>
 
+              {/* BOTÓ SUBMIT */}
               <div className="flex justify-end mt-12 w-full">
                 <button
                   type="submit"
                   disabled={estatEnviament !== "idle"}
                   className={`text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-2 shadow-md w-full sm:w-auto justify-center ${
                     estatEnviament === "success"
-                      ? "bg-green-600 hover:bg-green-600 cursor-default"
-                      : estatEnviament === "loading"
-                        ? "bg-[#ba5940]/70 cursor-wait"
-                        : "bg-[#ba5940] hover:bg-[#432918]"
+                      ? "bg-green-600 cursor-default"
+                      : estatEnviament === "espera"
+                        ? "bg-yellow-500 cursor-default"
+                        : estatEnviament === "loading"
+                          ? "bg-[#ba5940]/70 cursor-wait"
+                          : "bg-[#ba5940] hover:bg-[#432918]"
                   }`}
                 >
                   {estatEnviament === "idle" && (
                     <>
-                      Enviar inscripció
+                      Enviar inscripció{" "}
                       <span className="material-symbols-outlined text-base">
                         &#xe163;
                       </span>
                     </>
                   )}
-
                   {estatEnviament === "loading" && (
                     <>
                       Processant...
                       <svg
-                        className="animate-spin h-5 w-5 text-white"
+                        className="animate-spin h-5 w-5"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -566,19 +817,26 @@ function InfoPractica() {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        />
                       </svg>
                     </>
                   )}
-
                   {estatEnviament === "success" && (
                     <>
-                      Inscripció confirmada
+                      Inscripció confirmada{" "}
+                      <span className="material-symbols-outlined text-xl">
+                        &#xe86c;
+                      </span>
+                    </>
+                  )}
+                  {estatEnviament === "espera" && (
+                    <>
+                      Reserva en llista d'espera{" "}
                       <span className="material-symbols-outlined text-xl">
                         &#xe86c;
                       </span>
