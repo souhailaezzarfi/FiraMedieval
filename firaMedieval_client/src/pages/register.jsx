@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
@@ -33,6 +33,8 @@ function Register() {
   const [estatEnviament, setEstatEnviament] = useState("idle");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,7 +72,7 @@ function Register() {
       const response = await authService.register(formData);
       localStorage.setItem("token", response.data.token);
       login(response.data.user);
-      navigate("/");
+      navigate(from ?? "/perfil", { replace: true });
     } catch (err) {
       if (err.response?.status === 422) {
         // Error de validació
@@ -204,6 +206,7 @@ function Register() {
           Ja tens compte?{" "}
           <Link
             to="/login"
+            state={{ from }}
             className="text-[#ba5940] hover:underline font-medium"
           >
             Inicia sessió

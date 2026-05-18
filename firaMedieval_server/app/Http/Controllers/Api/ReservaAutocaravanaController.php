@@ -19,7 +19,7 @@ class ReservaAutocaravanaController extends Controller
         $user = Auth::user();
 
         if ($user->role == 'admin') {
-            $reserves = ReservaAutocaravana::with(['aparcament', 'user'])->get();
+            $reserves = ReservaAutocaravana::with(['aparcament', 'usuari'])->get();
             return response()->json($reserves);
         }
 
@@ -104,6 +104,48 @@ class ReservaAutocaravanaController extends Controller
         if (Auth::user()->role != 'admin' && $reserva->user_id !== Auth::id()) {
             return response()->json(['message' => 'No tens permís per veure aquesta reserva'], 403);
         }
+
+        return response()->json($reserva);
+    }
+
+    /**
+     * Actualitzar una reserva
+     */
+
+    public function update(Request $request, string $id)
+    {
+        $user = Auth::user();
+        $reserva = ReservaAutocaravana::findOrFail($id);
+
+        // Només el propietari pot editar la seva reserva
+        if ($reserva->user_id !== $user->id) {
+            return response()->json(['message' => 'No autoritzat'], 403);
+        }
+
+        // No es pot editar una reserva cancel·lada
+        if ($reserva->estat === 'cancel·lada') {
+            return response()->json(['message' => 'No es pot editar una reserva cancel·lada.'], 422);
+        }
+
+        $request->validate([
+            'marca_vehicle' => 'sometimes|string',
+            'model_vehicle' => 'sometimes|string',
+            'matricula'     => 'sometimes|string',
+            'procedencia'   => 'sometimes|string',
+            'total_persones' => 'sometimes|integer|min:1',
+            'data_arribada' => 'sometimes|date',
+            'data_sortida'  => 'sometimes|date|after:data_arribada',
+        ]);
+
+        $reserva->update($request->only([
+            'marca_vehicle',
+            'model_vehicle',
+            'matricula',
+            'procedencia',
+            'total_persones',
+            'data_arribada',
+            'data_sortida'
+        ]));
 
         return response()->json($reserva);
     }

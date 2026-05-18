@@ -12,10 +12,18 @@ import { useAuth } from "../context/AuthContext";
 import Activitats from "./admin/Activitats";
 import Usuaris from "./admin/Usuaris";
 import userService from "../services/userService";
+import Aparcaments from "./admin/Aparcaments";
+import Reserves from "./admin/ReservesAutocaravanes";
+
+
 
 const navItems = [
   { to: "/admin/activitats", label: "Activitats" },
   { to: "/admin/usuaris", label: "Usuaris" },
+  { to: "/admin/aparcaments", label: "Aparcaments" },
+  { to: "/admin/ReservesAutocaravanes", label: "ReservesAutocaravanes" },
+
+
 ];
 
 export default function AdminPanel() {
@@ -109,6 +117,10 @@ export default function AdminPanel() {
           <Route index element={<Navigate to="activitats" replace />} />
           <Route path="activitats" element={<Activitats />} />
           <Route path="usuaris" element={<Usuaris />} />
+          <Route path="aparcaments" element={<Aparcaments />} />
+          <Route path="ReservesAutocaravanes" element={<Reserves />} />
+
+
         </Routes>
       </main>
     </div>

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Password;
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/aparcament-actiu', [AparcamentController::class, 'actiu']);
 
 // Rutes d'activitats per als visitants
 Route::get('/activitats', [ActivitatController::class, 'index']);
@@ -69,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reserves', [ReservaAutocaravanaController::class, 'index']);
     Route::post('/reserves', [ReservaAutocaravanaController::class, 'store']);
     Route::get('/reserves/{id}', [ReservaAutocaravanaController::class, 'show']);
+    Route::put('/reserves/{id}', [ReservaAutocaravanaController::class, 'update']);
     Route::delete('/reserves/{id}', [ReservaAutocaravanaController::class, 'cancel']);
 
     // Activitats

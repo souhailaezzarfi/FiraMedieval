@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,6 +9,8 @@ function Login() {
   const [error, setError] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,11 +23,10 @@ function Login() {
       const response = await authService.login({ email, password });
       localStorage.setItem("token", response.data.token);
       login(response.data.user);
-
       if (response.data.user.role === "admin") {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/perfil", { replace: true });
+        navigate(from ?? "/perfil", { replace: true });
       }
     } catch (err) {
       if (err.response?.status === 401) {
