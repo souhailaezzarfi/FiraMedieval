@@ -179,7 +179,7 @@ export default function Usuaris() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-[#EDE3CF] flex items-center justify-center text-sm font-semibold text-[#6B4F30] flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-[#EDE3CF] flex items-center justify-center text-sm font-semibold text-[#6B4F30] shrink-0">
                         {initials(u)}
                       </div>
                       <span className="text-sm font-medium text-[#432918]">
