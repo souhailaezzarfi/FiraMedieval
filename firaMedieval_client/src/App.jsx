@@ -26,7 +26,7 @@ function PublicRoute() {
   return (
     <div className="min-h-screen flex flex-col bg-[#e1d7bc]">
       <Navbar />
-      <main className="grow pt-20">
+      <main className="grow pt-18">
         <Outlet />
       </main>
       <Footer />
