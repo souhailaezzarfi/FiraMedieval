@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Marquee from "../components/Marquee";
 import MasonryGallery from "../components/MasonryGallery";
 import hero from "../assets/hero.jpg";
-import marquee1 from "../assets/Marquee/InstiVescomtatDeCabrera.png";
-import marquee2 from "../assets/Marquee/logocatalunya.png";
-import marquee3 from "../assets/logos/turisme-hostalric.png";
-import marquee4 from "../assets/logos/vescomtat-cabrera.png";
-import marquee5 from "../assets/logos/ajuntament-hostalric.png";
 import castell from "../assets/cards/Castell-Hostalric.jpg";
 import mercat from "../assets/cards/mercat.jpeg";
 import torre from "../assets/cards/torre-fares.webp";
@@ -133,33 +129,8 @@ function Home() {
       </section>
 
       {/* MARQUEE */}
-      <section>
-        <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0]">
-          <div className="flex w-max animate-marquee whitespace-nowrap">
-            {[
-              marquee1,
-              marquee2,
-              marquee3,
-              marquee4,
-              marquee5,
-              marquee1,
-              marquee2,
-              marquee3,
-              marquee4,
-              marquee5,
-              marquee1,
-              marquee2,
-              marquee3,
-              marquee4,
-              marquee5,
-            ].map((img, i) => (
-              <span key={i} className="mx-6 inline-flex items-center">
-                <img className="w-20 h-20 object-contain" src={img} />
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+
+      <Marquee />
 
       <section className="py-28 px-6">
         <div className="max-w-7xl mx-auto">
