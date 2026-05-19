@@ -60,8 +60,7 @@ function ActivitatDetall() {
           setSelectedHorariId(dataActivitat.horaris[0].id);
         }
 
-        // NOU: Descarreguem les inscripcions de l'usuari per AQUESTA activitat.
-        // I les emparellarem amb cadascuna de les franges horàries per separat.
+        // Obtenir les inscripcions de l'usuari en aquesta activitat
         if (isLoggedIn) {
           try {
             const inscripcionsRes = await api.get(
@@ -71,7 +70,7 @@ function ActivitatDetall() {
 
             if (llistaInscripcions && llistaInscripcions.length > 0) {
               if (dataActivitat.horaris && dataActivitat.horaris.length > 0) {
-                // Busquem a quins horaris s'ha inscrit i ho afegim
+                // Buscar a quins horaris s'ha inscrit i ho afegir-ho
                 dataActivitat.horaris = dataActivitat.horaris.map((h) => {
                   const ins = llistaInscripcions.find(
                     (i) => i.horari_id == h.id,
@@ -87,7 +86,6 @@ function ActivitatDetall() {
                   return h;
                 });
               } else {
-                // Si no hi haguessin horaris definits (fallback per si de cas)
                 const estatReal = llistaInscripcions[0].estat;
                 dataActivitat.inscripcio_usuari = {
                   estat: estatReal === "espera" ? "espera" : "acceptada",
@@ -141,7 +139,7 @@ function ActivitatDetall() {
         response.data.inscripcio?.estat || response.data.estat || "confirmada";
       const nouEstatUI = estatReal === "espera" ? "espera" : "acceptada";
 
-      // L'estat d'inscripció l'afegim NOMÉS a l'horari seleccionat.
+      // Afegir estat de l'inscripció a l'horari seleccionat
       setActivitat((prev) => {
         const updatedHoraris = prev.horaris?.map((h) =>
           h.id == selectedHorariId
@@ -159,7 +157,6 @@ function ActivitatDetall() {
       setEstatEnviament("success");
     } catch (err) {
       console.error("Error al fer la inscripció:", err);
-      // Si el backend ens tira un error 409 vol dir que ja hi estàvem,
       if (err.response && err.response.status === 409) {
         setActivitat((prev) => {
           const updatedHoraris = prev.horaris?.map((h) =>
@@ -174,7 +171,6 @@ function ActivitatDetall() {
         });
         setEstatEnviament("success");
       } else if (err.response && err.response.status === 403) {
-        // En cas que l'API bloquegi per tancades
         alert("Inscripcions tancades per aquesta franja");
         setEstatEnviament("idle");
       } else {
@@ -183,7 +179,7 @@ function ActivitatDetall() {
     }
   };
 
-  // Dinàmicament llegim l'estat d'inscripció de la franja horària seleccionada.
+  // Llegir l'estat d'inscripció de la franja horària seleccionada
   let inscripcioActual = null;
   if (activitat) {
     if (activitat.horaris && activitat.horaris.length > 0) {
@@ -194,6 +190,22 @@ function ActivitatDetall() {
     } else {
       inscripcioActual = activitat.inscripcio_usuari;
     }
+  }
+
+  // Lògica per agrupar els horaris pel dia
+  const horarisAgrupats = {};
+  if (activitat?.horaris) {
+    activitat.horaris.forEach((horari) => {
+      const dataStr = formatarData(horari.hora_inici);
+      if (!horarisAgrupats[dataStr]) {
+        horarisAgrupats[dataStr] = [];
+      }
+      let horaStr = `${formatarHora(horari.hora_inici)} h`;
+      if (horari.hora_final) {
+        horaStr += ` - ${formatarHora(horari.hora_final)} h`;
+      }
+      horarisAgrupats[dataStr].push(horaStr);
+    });
   }
 
   if (carregant) {
@@ -228,7 +240,7 @@ function ActivitatDetall() {
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
         <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-6 rounded-r-lg inline-block text-[#ba5940] font-bold">
           <p className="flex items-center gap-3 text-lg">
-            <span className="material-symbols-outlined text-2xl"></span>
+            <span className="material-symbols-outlined text-2xl">&#xe000;</span>
             {error || "Activitat no trobada"}
           </p>
         </div>
@@ -249,28 +261,14 @@ function ActivitatDetall() {
         className="flex items-center gap-2 text-[#432918]/70 hover:text-[#ba5940] transition-colors font-bold mb-8 group bg-white/50 border border-[#432918]/10 py-2 px-5 rounded-full shadow-sm w-fit cursor-pointer"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">
-          
+          &#xe5c4;
         </span>
         Tornar a l'inici
       </button>
 
-      <div className="w-full h-64 md:h-96 rounded-3xl overflow-hidden mb-12 bg-[#ba5940]/10 border border-[#ba5940]/20 flex items-center justify-center shadow-sm">
-        {activitat.imatge ? (
-          <img
-            src={activitat.imatge}
-            alt={activitat.nom}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span className="material-symbols-outlined text-6xl text-[#ba5940]/30">
-            
-          </span>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 xl:gap-16">
-        <div className="lg:col-span-2">
-          <div className="mb-4">
+        <div className="lg:col-span-2 flex flex-col h-full">
+          <div className="mb-8">
             {activitat.categories && activitat.categories.length > 0 && (
               <span className="text-[#ba5940] font-bold text-sm tracking-wider uppercase mb-2 block">
                 {activitat.categories.map((c) => c.nom).join(" • ")}
@@ -289,149 +287,94 @@ function ActivitatDetall() {
             )}
           </div>
 
-          <div className="prose max-w-none text-lg text-[#432918]/90 leading-relaxed text-justify">
+          <div className="w-full h-64 md:h-80 rounded-3xl overflow-hidden mb-8 bg-[#ba5940]/10 border border-[#ba5940]/20 flex items-center justify-center shadow-sm">
+            {activitat.imatge ? (
+              <img
+                src={activitat.imatge}
+                alt={activitat.nom}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="material-symbols-outlined text-6xl text-[#ba5940]/30">
+                &#xe3f4;
+              </span>
+            )}
+          </div>
+
+          <div className="prose max-w-none text-lg text-[#432918]/90 leading-relaxed text-justify mb-10">
             {activitat.descripcio.split("\n").map((paragraf, idx) => (
               <p key={idx} className="mb-4">
                 {paragraf}
               </p>
             ))}
           </div>
-        </div>
 
-        <div className="lg:col-span-1 space-y-8">
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-[#432918]/10">
-            <h3 className="text-2xl font-serif font-bold text-[#432918] mb-6">
-              Informació
-            </h3>
+          {activitat.aforament && (
+            <div className="border border-[#432918]/20 p-6 md:p-8 rounded-2xl shadow-sm bg-white/50 mt-auto">
+              <h3 className="text-2xl font-serif font-bold text-[#432918] mb-6">
+                Inscripcions
+              </h3>
 
-            <ul className="space-y-6 mb-8">
-              {/* Horaris */}
-              {activitat.horaris && activitat.horaris.length > 0 && (
-                <li className="flex gap-4">
-                  <span className="material-symbols-outlined text-[#461615] mt-1">
-                    
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-2">
-                      Horari
-                    </p>
-                    <div className="space-y-4">
-                      {activitat.horaris.map((horari) => (
-                        <div key={horari.id} className="flex flex-col">
-                          <span className="text-[#432918] font-bold text-base">
-                            {formatarData(horari.hora_inici)}
-                          </span>
-                          <span className="font-normal text-[#432918]/80 text-[15px]">
-                            {formatarHora(horari.hora_inici)} h
-                            {horari.hora_final && (
-                              <> - {formatarHora(horari.hora_final)} h</>
-                            )}
-                          </span>
-                        </div>
-                      ))}
+              <div className="flex flex-col sm:flex-row items-end gap-4 w-full">
+                {activitat.horaris && activitat.horaris.length > 1 && (
+                  <div className="w-full sm:flex-1">
+                    <label className="block text-[11px] font-bold mb-2 text-[#432918]/50 uppercase tracking-wider">
+                      Selecciona la franja horària
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedHorariId}
+                        onChange={(e) => {
+                          setSelectedHorariId(e.target.value);
+                          setEstatEnviament("idle");
+                        }}
+                        className="w-full px-4 py-3 border border-[#432918]/20 rounded-xl focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] bg-[#fdfaf3] text-[#432918] appearance-none font-medium text-sm cursor-pointer"
+                      >
+                        {activitat.horaris.map((h) => (
+                          <option key={h.id} value={h.id}>
+                            {formatarDataCurta(h.hora_inici)} -{" "}
+                            {formatarHora(h.hora_inici)} h{" "}
+                            {h.hora_final
+                              ? `a ${formatarHora(h.hora_final)} h`
+                              : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
+                        &#xe5c5;
+                      </span>
                     </div>
                   </div>
-                </li>
-              )}
+                )}
 
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#461615] mt-1">
-                  
-                </span>
-                <div>
-                  <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-1">
-                    Ubicació
-                  </p>
-                  <p className="text-[#432918] font-bold text-base">
-                    {activitat.ubicacio}
-                  </p>
-                </div>
-              </li>
-
-              {activitat.aforament && (
-                <li className="flex gap-4">
-                  <span className="material-symbols-outlined text-[#461615] mt-1">
-                    
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-1">
-                      Aforament
-                    </p>
-                    <p className="text-[#432918] font-bold text-base">
-                      {activitat.aforament}{" "}
-                      {activitat.aforament === 1 ? "persona" : "persones"}
-                    </p>
-                  </div>
-                </li>
-              )}
-            </ul>
-
-            {/* ZONA D'INSCRIPCIONS */}
-            {activitat.aforament && (
-              <>
-                <hr className="border-[#432918]/10 mb-6" />
-
-                <div>
-                  <p className="font-bold text-[#432918] mb-4">Inscripcions</p>
-
-                  {/* SELECTOR D'HORARI */}
-                  {activitat.horaris && activitat.horaris.length > 1 && (
-                    <div className="mb-5">
-                      <label className="block text-[11px] font-bold mb-2 text-[#432918]/50 uppercase tracking-wider">
-                        Selecciona la franja horària
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={selectedHorariId}
-                          onChange={(e) => {
-                            setSelectedHorariId(e.target.value);
-                            setEstatEnviament("idle");
-                          }}
-                          className="w-full px-4 py-3 border border-[#432918]/20 rounded-xl focus:outline-none focus:border-[#ba5940] focus:ring-1 focus:ring-[#ba5940] bg-[#fdfaf3] text-[#432918] appearance-none font-medium text-sm cursor-pointer"
-                        >
-                          {activitat.horaris.map((h) => (
-                            <option key={h.id} value={h.id}>
-                              {formatarDataCurta(h.hora_inici)} -{" "}
-                              {formatarHora(h.hora_inici)} h{" "}
-                              {h.hora_final
-                                ? `a ${formatarHora(h.hora_final)} h`
-                                : ""}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
-                          
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Si NO està loguejat: Missatge per iniciar sessió */}
+                <div className="w-full sm:w-auto sm:min-w-65">
                   {!isLoggedIn && (
-                    <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center gap-3 mb-4">
+                    <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 w-full">
                       <span className="material-symbols-outlined">
-                        &#xe8a6;
+                        &#xe897;
                       </span>
                       Inicia sessió per inscriure't
                     </div>
                   )}
 
-                  {/* Si ESTÀ loguejat: Mostrar estats si ja està inscrit */}
                   {isLoggedIn && inscripcioActual?.estat === "acceptada" && (
-                    <div className="bg-green-100 text-green-800 border border-green-200 font-bold px-4 py-3 rounded-xl flex items-center gap-3 mb-4">
-                      <span className="material-symbols-outlined"></span>
+                    <div className="bg-green-100 text-green-800 border border-green-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 w-full">
+                      <span className="material-symbols-outlined">
+                        &#xe86c;
+                      </span>
                       Inscripció acceptada
                     </div>
                   )}
 
                   {isLoggedIn && inscripcioActual?.estat === "espera" && (
-                    <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center gap-3 mb-4">
-                      <span className="material-symbols-outlined"></span>
+                    <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 w-full">
+                      <span className="material-symbols-outlined">
+                        &#xe192;
+                      </span>
                       En llista d'espera
                     </div>
                   )}
 
-                  {/* Mostrar el botó NOMÉS si està loguejat i no hi ha inscripció prèvia en aquesta franja */}
                   {isLoggedIn && !inscripcioActual && (
                     <button
                       onClick={handleInscripcio}
@@ -444,7 +387,9 @@ function ActivitatDetall() {
                     >
                       {estatEnviament === "idle" && (
                         <>
-                          <span className="material-symbols-outlined"></span>
+                          <span className="material-symbols-outlined">
+                            &#xe7fe;
+                          </span>
                           Inscriu-te
                         </>
                       )}
@@ -477,11 +422,77 @@ function ActivitatDetall() {
                     </button>
                   )}
                 </div>
-              </>
-            )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-1 flex flex-col gap-8 h-full">
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-[#432918]/10">
+            <h3 className="text-2xl font-serif font-bold text-[#432918] mb-6">
+              Informació
+            </h3>
+
+            <ul className="space-y-6">
+              {activitat.horaris && activitat.horaris.length > 0 && (
+                <li className="flex gap-4">
+                  <span className="material-symbols-outlined text-[#461615] mt-1">
+                    &#xe192;
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-2">
+                      Horari
+                    </p>
+                    <div className="space-y-4">
+                      {Object.entries(horarisAgrupats).map(([data, hores]) => (
+                        <div key={data} className="flex flex-col">
+                          <span className="text-[#432918] font-bold text-base">
+                            {data}
+                          </span>
+                          <span className="font-normal text-[#432918]/80 text-[15px]">
+                            {hores.join(", ")}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </li>
+              )}
+
+              <li className="flex gap-4">
+                <span className="material-symbols-outlined text-[#461615] mt-1">
+                  &#xe569;
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-1">
+                    Ubicació
+                  </p>
+                  <p className="text-[#432918] font-bold text-base">
+                    {activitat.ubicacio}
+                  </p>
+                </div>
+              </li>
+
+              {activitat.aforament && (
+                <li className="flex gap-4">
+                  <span className="material-symbols-outlined text-[#461615] mt-1">
+                    &#xe7ef;
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-[#432918]/50 uppercase tracking-wider mb-1">
+                      Aforament
+                    </p>
+                    <p className="text-[#432918] font-bold text-base">
+                      {activitat.aforament}{" "}
+                      {activitat.aforament === 1 ? "persona" : "persones"}
+                    </p>
+                  </div>
+                </li>
+              )}
+            </ul>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#432918]/10 flex flex-col h-72">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#432918]/10 flex flex-col h-72 mt-auto">
             <h3 className="text-2xl font-serif font-bold text-[#432918] mb-4">
               Ubicació
             </h3>
@@ -498,7 +509,9 @@ function ActivitatDetall() {
                 ></iframe>
               ) : (
                 <div className="flex items-center justify-center h-full text-[#432918]/40">
-                  <span className="material-symbols-outlined text-4xl"></span>
+                  <span className="material-symbols-outlined text-4xl">
+                    &#xe55b;
+                  </span>
                 </div>
               )}
             </div>
