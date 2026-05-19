@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('activitat_id');
             $table->foreign('activitat_id')->references('id')->on('activitats')->onDelete('cascade');
+
+            $table->unsignedBigInteger('horari_id');
+            $table->foreign('horari_id')->references('id')->on('horaris_activitat')->onDelete('cascade');
+
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('estat', ['confirmada', 'espera', 'cancel·lada']);
