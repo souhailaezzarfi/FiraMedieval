@@ -16,40 +16,39 @@ import Majorets from "../assets/Agraïments/Majorets.png";
 import ProteccioCivil from "../assets/Agraïments/Protecció Civil.png";
 import Puntaires from "../assets/Agraïments/Puntaires.png";
 import catalunyaTurisme from "../assets/Agraïments/Catalunya Turisme.jpg";
- 
 
 const marqueeImages = [
-    ADF,
-    AFACole,
-    ArtisticEvents,
-    AssociacioComerc,
-    ClubBitlles,
-    ClubPatiHostalric,
-    ClubHostalric,
-    ComissioFestaMedieval,
-    ComissioPictorica,
-    CostaBrava,
-    DiputacioGirona,
-    Geganters,
-    LofoAfaIns,
-    LoveAnimals,
-    Majorets,
-    ProteccioCivil,
-    Puntaires,
-    catalunyaTurisme,
-    ];
+  ADF,
+  AFACole,
+  ArtisticEvents,
+  AssociacioComerc,
+  ClubBitlles,
+  ClubPatiHostalric,
+  ClubHostalric,
+  ComissioFestaMedieval,
+  ComissioPictorica,
+  CostaBrava,
+  DiputacioGirona,
+  Geganters,
+  LofoAfaIns,
+  LoveAnimals,
+  Majorets,
+  ProteccioCivil,
+  Puntaires,
+  catalunyaTurisme,
+];
 
 export default function Marquee() {
   const doubled = [...marqueeImages, ...marqueeImages];
 
   return (
     <section>
-      <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0]">
+      <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0] py-4">
         <div className="flex w-max animate-marquee whitespace-nowrap">
           {doubled.map((img, i) => (
             <span key={i} className="mx-6 inline-flex items-center">
               <img
-                className="w-20 h-20 object-contain"
+                className="w-auto h-16 object-contain"
                 src={img}
                 alt={`marca-${i}`}
               />
