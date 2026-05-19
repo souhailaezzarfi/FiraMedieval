@@ -15,6 +15,7 @@ const EMPTY_FORM = {
   ubicacio: "",
   aforament: "",
   imatge: null,
+  eliminarImatge: false,
   categories: [],
   horaris: [{ ...EMPTY_HORARI }],
 };
@@ -39,6 +40,9 @@ const toDatetimeLocal = (dt) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const FieldError = ({ msg }) =>
+  msg ? <p className="text-red-600 text-xs mt-1">{msg}</p> : null;
+
 export default function Activitats() {
   const [activitats, setActivitats] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -51,7 +55,7 @@ export default function Activitats() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState("");
-  const [formError, setFormError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [repeteixDies, setRepeteixDies] = useState(false);
 
   const load = async () => {
@@ -125,7 +129,7 @@ export default function Activitats() {
     setEditItem(null);
     setForm(EMPTY_FORM);
     setNovaCategoria("");
-    setFormError(null);
+    setFieldErrors({});
     setShowModal(true);
     setRepeteixDies(false);
   };
@@ -139,6 +143,7 @@ export default function Activitats() {
       ubicacio: item.ubicacio ?? "",
       aforament: item.aforament ?? "",
       imatge: null,
+      eliminarImatge: false,
       categories: (item.categories ?? []).map((c) => c.nom ?? c),
       horaris:
         (item.horaris ?? []).length > 0
@@ -149,7 +154,7 @@ export default function Activitats() {
           : [{ ...EMPTY_HORARI }],
     });
     setNovaCategoria("");
-    setFormError(null);
+    setFieldErrors({});
     setShowModal(true);
     setRepeteixDies(false);
   };
@@ -165,19 +170,27 @@ export default function Activitats() {
   };
 
   const handleSubmit = async () => {
-    setFormError(null);
-    if (!form.nom || !form.organitzador || !form.descripcio || !form.ubicacio) {
-      setFormError("Omple tots els camps obligatoris.");
+    // Validació frontend amb errors per camp
+    const errors = {};
+
+    if (!form.nom) errors.nom = "El nom és obligatori.";
+    if (!form.organitzador)
+      errors.organitzador = "L'organitzador és obligatori.";
+    if (!form.descripcio) errors.descripcio = "La descripció és obligatòria.";
+    if (!form.ubicacio) errors.ubicacio = "La ubicació és obligatòria.";
+    if (form.categories.length === 0)
+      errors.categories = "Selecciona almenys una categoria.";
+    if (form.horaris.some((h) => !h.hora_inici))
+      errors.horaris = "Tots els horaris han de tenir hora d'inici.";
+    if (form.imatge && form.imatge.size > 2 * 1024 * 1024)
+      errors.imatge = "La imatge no pot pesar més de 2MB.";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
-    if (form.categories.length === 0) {
-      setFormError("Selecciona almenys una categoria.");
-      return;
-    }
-    if (form.horaris.some((h) => !h.hora_inici)) {
-      setFormError("Tots els horaris han de tenir hora d'inici.");
-      return;
-    }
+
+    setFieldErrors({});
 
     let horarisToSend = form.horaris;
 
@@ -212,6 +225,7 @@ export default function Activitats() {
       fd.append("ubicacio", form.ubicacio);
       if (form.aforament) fd.append("aforament", form.aforament);
       if (form.imatge) fd.append("imatge", form.imatge);
+      if (form.eliminarImatge) fd.append("eliminar_imatge", "1");
 
       form.categories.forEach((c, i) => fd.append(`categories[${i}]`, c));
       horarisToSend.forEach((h, i) => {
@@ -227,8 +241,32 @@ export default function Activitats() {
       setShowModal(false);
       load();
     } catch (err) {
-      const msg = err.response?.data?.message ?? "Error en desar l'activitat.";
-      setFormError(msg);
+      const laravelErrors = err.response?.data?.errors;
+      if (laravelErrors) {
+        const mapped = {};
+        [
+          "nom",
+          "organitzador",
+          "descripcio",
+          "ubicacio",
+          "aforament",
+          "imatge",
+          "categories",
+        ].forEach((key) => {
+          if (laravelErrors[key]) mapped[key] = laravelErrors[key][0];
+        });
+        // Horaris (poden venir com horaris.0.hora_inici, etc.)
+        const horariError = Object.keys(laravelErrors).find((k) =>
+          k.startsWith("horaris"),
+        );
+        if (horariError) mapped.horaris = laravelErrors[horariError][0];
+
+        setFieldErrors(mapped);
+      } else {
+        setFieldErrors({
+          general: err.response?.data?.message ?? "Error en desar l'activitat.",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -258,7 +296,7 @@ export default function Activitats() {
         </div>
         <button
           onClick={openCreate}
-          className="bg-[#D4A853] text-[#1E0F07] font-semibold text-md px-5 py-2.5 rounded-lg hover:bg-[#C49743] transition-colors"
+          className="bg-[#D4A853] text-[#1E0F07] font-semibold text-lg px-5 py-2.5 rounded-lg hover:bg-[#C49743] transition-colors"
         >
           + Nova activitat
         </button>
@@ -278,8 +316,8 @@ export default function Activitats() {
                   "Imatge",
                   "Nom",
                   "Organitzador",
-                  "Descripció",
-                  "Ubicació",
+                  "Descripció",
+                  "Ubicació",
                   "Categories",
                   "Data",
                   "Horaris",
@@ -326,7 +364,6 @@ export default function Activitats() {
                   <td className="px-4 py-3 text-sm text-[#6B4F30]">
                     {a.ubicacio ?? "—"}
                   </td>
-
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {(a.categories ?? []).map((c) => (
@@ -390,7 +427,6 @@ export default function Activitats() {
                       >
                         <FaEdit size={22} />
                       </button>
-
                       <button
                         onClick={() => handleDelete(a.id)}
                         className="p-2 rounded-full text-red-700 hover:bg-[#EDE3CF] hover:text-red-600 transition-all cursor-pointer"
@@ -445,13 +481,14 @@ export default function Activitats() {
             </div>
 
             <div className="px-8 py-6 space-y-4">
-              {formError && (
+              {/* Error general (500, xarxa) */}
+              {fieldErrors.general && (
                 <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">
-                  {formError}
+                  {fieldErrors.general}
                 </div>
               )}
 
-              {/* nom, organitzador, ubicacio */}
+              {/* Nom, organitzador, ubicacio */}
               {[
                 { key: "nom", label: "Nom *", type: "text" },
                 { key: "organitzador", label: "Organitzador *", type: "text" },
@@ -464,11 +501,15 @@ export default function Activitats() {
                   <input
                     type={type}
                     value={form[key]}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, [key]: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 rounded-lg font-sans border border-[#C8B08A] bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853]"
+                    onChange={(e) => {
+                      setForm((f) => ({ ...f, [key]: e.target.value }));
+                      setFieldErrors((fe) => ({ ...fe, [key]: undefined }));
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg font-sans border bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] ${
+                      fieldErrors[key] ? "border-red-400" : "border-[#C8B08A]"
+                    }`}
                   />
+                  <FieldError msg={fieldErrors[key]} />
                 </div>
               ))}
             </div>
@@ -481,11 +522,15 @@ export default function Activitats() {
               <textarea
                 rows={3}
                 value={form.descripcio}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, descripcio: e.target.value }))
-                }
-                className="w-full px-3 py-2 rounded-lg font-sans border border-[#C8B08A] bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] resize-none"
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, descripcio: e.target.value }));
+                  setFieldErrors((fe) => ({ ...fe, descripcio: undefined }));
+                }}
+                className={`w-full px-3 py-2 rounded-lg font-sans border bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] resize-none ${
+                  fieldErrors.descripcio ? "border-red-400" : "border-[#C8B08A]"
+                }`}
               />
+              <FieldError msg={fieldErrors.descripcio} />
             </div>
 
             {/* Categories */}
@@ -501,7 +546,13 @@ export default function Activitats() {
                     <button
                       key={c.id ?? nom}
                       type="button"
-                      onClick={() => toggleCategoria(nom)}
+                      onClick={() => {
+                        toggleCategoria(nom);
+                        setFieldErrors((fe) => ({
+                          ...fe,
+                          categories: undefined,
+                        }));
+                      }}
                       className={`text-md px-3 py-1.5 rounded-full border transition-colors ${
                         selected
                           ? "bg-[#D4A853] border-[#D4A853] text-[#1E0F07] font-semibold"
@@ -551,6 +602,7 @@ export default function Activitats() {
                   ))}
                 </div>
               )}
+              <FieldError msg={fieldErrors.categories} />
             </div>
 
             {/* Horaris */}
@@ -577,9 +629,13 @@ export default function Activitats() {
                       <input
                         type="datetime-local"
                         value={h.hora_inici}
-                        onChange={(e) =>
-                          updateHorari(i, "hora_inici", e.target.value)
-                        }
+                        onChange={(e) => {
+                          updateHorari(i, "hora_inici", e.target.value);
+                          setFieldErrors((fe) => ({
+                            ...fe,
+                            horaris: undefined,
+                          }));
+                        }}
                         className="w-full px-3 py-1.5 rounded-lg font-sans border border-[#C8B08A] bg-white text-sm text-[#2C1A0E] outline-none focus:border-[#D4A853]"
                       />
                     </div>
@@ -608,6 +664,7 @@ export default function Activitats() {
                   </div>
                 ))}
               </div>
+              <FieldError msg={fieldErrors.horaris} />
             </div>
 
             {/* Aforament */}
@@ -618,11 +675,15 @@ export default function Activitats() {
               <input
                 type="text"
                 value={form.aforament}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, aforament: e.target.value }))
-                }
-                className="w-full px-3 py-2 rounded-lg font-sans border border-[#C8B08A] bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] resize-none"
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, aforament: e.target.value }));
+                  setFieldErrors((fe) => ({ ...fe, aforament: undefined }));
+                }}
+                className={`w-full px-3 py-2 rounded-lg font-sans border bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] ${
+                  fieldErrors.aforament ? "border-red-400" : "border-[#C8B08A]"
+                }`}
               />
+              <FieldError msg={fieldErrors.aforament} />
             </div>
 
             {/* Imatge */}
@@ -630,37 +691,59 @@ export default function Activitats() {
               <label className="block text-lg font-medium text-[#6B4F30] mb-1">
                 Imatge
               </label>
-              {editItem?.imatge && (
-                <img
-                  src={editItem.imatge}
-                  alt="actual"
-                  className="w-20 h-14 object-cover rounded-md mb-2"
+              {editItem?.imatge && !form.eliminarImatge && (
+                <div className="flex items-center gap-3 mb-2">
+                  <img
+                    src={editItem.imatge}
+                    alt="actual"
+                    className="w-20 h-14 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        eliminarImatge: true,
+                        imatge: null,
+                      }))
+                    }
+                    className="text-md text-red-500 hover:text-red-700"
+                  >
+                    Eliminar imatge
+                  </button>
+                </div>
+              )}
+              {form.eliminarImatge && (
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-md text-red-500">
+                    La imatge s'eliminarà en desar.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({ ...f, eliminarImatge: false }))
+                    }
+                    className="text-md text-[#6B4F30] underline"
+                  >
+                    Cancel·lar
+                  </button>
+                </div>
+              )}
+              {!form.eliminarImatge && (
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg"
+                  onChange={(e) => {
+                    setForm((f) => ({
+                      ...f,
+                      imatge: e.target.files[0] ?? null,
+                    }));
+                    setFieldErrors((fe) => ({ ...fe, imatge: undefined }));
+                  }}
+                  className="w-full text-sm font-sans text-[#2C1A0E]"
                 />
               )}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/jpg"
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    imatge: e.target.files[0] ?? null,
-                  }))
-                }
-                className="w-full text-sm font-sans text-[#2C1A0E]"
-              />
-            </div>
-
-            <div className="px-8 py-4 flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="repeteix"
-                checked={repeteixDies}
-                onChange={(e) => setRepeteixDies(e.target.checked)}
-                className="w-4 h-4 accent-[#D4A853]"
-              />
-              <label htmlFor="repeteix"  className="text-sm font-sans text-[#6B4F30]">
-                Es repeteix els 3 dies de la fira (dia, dia+1, dia+2)
-              </label>
+              <FieldError msg={fieldErrors.imatge} />
             </div>
 
             {/* Footer modal */}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import aparcamentService from "../../services/aparcamentService";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+
 
 export default function Aparcaments() {
   const [aparcaments, setAparcaments] = useState([]);
@@ -192,13 +194,13 @@ export default function Aparcaments() {
                   <td className="px-4 py-3 flex items-center gap-1">
                     <button
                       onClick={() => openEdit(a)}
-                      className="text-[#6B4F30] text-sm px-3 py-1 rounded-md hover:bg-[#EDE3CF] transition-colors"
+                      className="p-2 rounded-full text-[#6B4F30] hover:bg-[#EDE3CF] hover:text-[#432918] transition-all cursor-pointer"
                     >
-                      <MdEdit size={22} />
+                      <FaEdit size={22} />
                     </button>
                     <button
                       onClick={() => handleDelete(a.id)}
-                      className="text-red-700 text-sm px-3 py-1 rounded-md hover:bg-red-50 transition-colors"
+                      className="p-2 rounded-full text-red-700 hover:bg-[#EDE3CF] hover:text-red-600 transition-all cursor-pointer"
                     >
                       <MdDelete size={22} />
                     </button>
