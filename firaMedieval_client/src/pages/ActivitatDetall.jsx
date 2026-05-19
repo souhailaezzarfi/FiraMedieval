@@ -49,6 +49,8 @@ function ActivitatDetall() {
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     const fetchActivitat = async () => {
       try {
         setCarregant(true);
