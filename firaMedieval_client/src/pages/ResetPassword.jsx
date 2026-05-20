@@ -10,13 +10,22 @@ function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Cogemos el token y email de la URL
   const token = window.location.pathname.split("/")[2];
   const email = searchParams.get("email");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (password.length < 8) {
+      setError("La contrasenya ha de tenir mínim 8 caràcters.");
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      setError("Les contrasenyes no coincideixen.");
+      return;
+    }
+
     try {
       await api.post("/reset-password", {
         token,
@@ -27,7 +36,13 @@ function ResetPassword() {
       setSuccess(true);
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
-      setError("Hi ha hagut un error. El token pot haver caducat.");
+      const errors = err.response?.data?.errors;
+      if (errors) {
+        const primerError = Object.values(errors)[0][0];
+        setError(primerError);
+      } else {
+        setError("Hi ha hagut un error. El token pot haver caducat.");
+      }
     }
   };
 

@@ -18,6 +18,9 @@ services:
       - DB_PASSWORD=fira_pass
     networks:
       - fira-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     depends_on:
       - db
     command: >
