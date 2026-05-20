@@ -19,8 +19,8 @@ function Activitats() {
   const [categoria, setCategoria] = useState("Totes");
   const [ubicacio, setUbicacio] = useState("Totes");
   const [ocultarFinalitzades, setOcultarFinalitzades] = useState(false);
+  const [diaSeleccionat, setDiaSeleccionat] = useState("Tots");
 
-  // Comprovem si l'usuari ha iniciat sessió
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -28,23 +28,36 @@ function Activitats() {
       try {
         setCarregant(true);
         const response = await api.get("/activitats");
-
         const activitatsAplanades = [];
 
         response.data.forEach((act) => {
           if (act.horaris && act.horaris.length > 0) {
+            const horarisPorDia = {};
             act.horaris.forEach((horari) => {
               const dataObj = new Date(horari.hora_inici.replace(" ", "T"));
+              const dataKey = dataObj.toISOString().split("T")[0];
+              if (!horarisPorDia[dataKey]) horarisPorDia[dataKey] = [];
+              horarisPorDia[dataKey].push(dataObj);
+            });
 
+            Object.entries(horarisPorDia).forEach(([dataKey, hores]) => {
+              hores.sort((a, b) => a - b);
+              const primeraHora = hores[0];
               activitatsAplanades.push({
                 ...act,
-                id_unica: `${act.id}-${horari.id || Math.random()}`,
-                data: dataObj.toISOString().split("T")[0],
-                hora: dataObj.toLocaleTimeString("ca-ES", {
+                id_unica: `${act.id}-${dataKey}`,
+                data: dataKey,
+                hora: primeraHora.toLocaleTimeString("ca-ES", {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
-                data_obj: dataObj,
+                hores_dia: hores.map((h) =>
+                  h.toLocaleTimeString("ca-ES", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                ),
+                data_obj: primeraHora,
               });
             });
           } else {
@@ -53,6 +66,7 @@ function Activitats() {
               id_unica: `${act.id}-sense-hora`,
               data: "Sense data",
               hora: "--:--",
+              hores_dia: [],
               data_obj: new Date(8640000000000000),
             });
           }
@@ -61,7 +75,6 @@ function Activitats() {
         setDadesActivitats(activitatsAplanades);
         setError(null);
       } catch (err) {
-        console.error("Error carregant activitats:", err);
         setError("No s'han pogut carregar les activitats de la base de dades.");
       } finally {
         setCarregant(false);
@@ -77,10 +90,30 @@ function Activitats() {
       dadesActivitats.flatMap((a) => a.categories?.map((c) => c.nom) || []),
     ),
   ];
+
   const ubicacions = [
     "Totes",
     ...new Set(dadesActivitats.map((a) => a.ubicacio)),
   ];
+
+  const diesUnics = [
+    ...new Set(
+      dadesActivitats.filter((a) => a.data !== "Sense data").map((a) => a.data),
+    ),
+  ].sort();
+
+  const dies = ["Tots", "Repeteix", ...diesUnics];
+
+  const totalDiesFira = diesUnics.length;
+
+  const diesPerActivitat = useMemo(() => {
+    const mapa = {};
+    dadesActivitats.forEach((a) => {
+      if (!mapa[a.id]) mapa[a.id] = new Set();
+      if (a.data !== "Sense data") mapa[a.id].add(a.data);
+    });
+    return mapa;
+  }, [dadesActivitats]);
 
   const activitatsAgrupades = useMemo(() => {
     const filtrades = dadesActivitats.filter((activitat) => {
@@ -97,19 +130,37 @@ function Activitats() {
         ? activitat.data_obj >= new Date()
         : true;
 
+      const diesAct = diesPerActivitat[activitat.id]?.size ?? 0;
+      const coincideixDia =
+        diaSeleccionat === "Tots" ||
+        (diaSeleccionat === "Repeteix" &&
+          totalDiesFira > 0 &&
+          diesAct === totalDiesFira) ||
+        activitat.data === diaSeleccionat;
+
       return (
         coincideixCerca &&
         coincideixCategoria &&
         coincideixUbicacio &&
-        noFinalitzada
+        noFinalitzada &&
+        coincideixDia
       );
     });
 
-    const agrupades = filtrades.reduce((acc, activitat) => {
-      if (!acc[activitat.data]) {
-        acc[activitat.data] = [];
-      }
-      acc[activitat.data].push(activitat);
+    const activitatsAMostrar =
+      diaSeleccionat === "Repeteix"
+        ? Object.values(
+            filtrades.reduce((acc, a) => {
+              if (!acc[a.id]) acc[a.id] = a;
+              return acc;
+            }, {}),
+          )
+        : filtrades;
+
+    const agrupades = activitatsAMostrar.reduce((acc, activitat) => {
+      const clau = diaSeleccionat === "Repeteix" ? "Repeteix" : activitat.data;
+      if (!acc[clau]) acc[clau] = [];
+      acc[clau].push(activitat);
       return acc;
     }, {});
 
@@ -119,7 +170,16 @@ function Activitats() {
         obj[key] = agrupades[key].sort((a, b) => a.hora.localeCompare(b.hora));
         return obj;
       }, {});
-  }, [dadesActivitats, cerca, categoria, ubicacio, ocultarFinalitzades]);
+  }, [
+    dadesActivitats,
+    cerca,
+    categoria,
+    ubicacio,
+    ocultarFinalitzades,
+    diaSeleccionat,
+    diesPerActivitat,
+    totalDiesFira,
+  ]);
 
   if (carregant) {
     return (
@@ -155,78 +215,107 @@ function Activitats() {
       </h1>
 
       <div className="w-full">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm mb-12 border border-[#432918]/10 flex flex-col xl:flex-row gap-6 items-center justify-between">
-          <div className="relative w-full xl:w-96 shrink-0">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#432918]/50">
-              &#xe8b6;
-            </span>
-            <input
-              type="text"
-              placeholder="Cercar activitats..."
-              value={cerca}
-              onChange={(e) => setCerca(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] focus:border-transparent transition-all bg-[#fdfaf3]"
-            />
+        {/* Barra de filtres */}
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm mb-12 border border-[#432918]/10 flex flex-col gap-4">
+          {/* Dia, categoria i ubicacio */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
+                Dia:
+              </label>
+              <div className="relative w-60">
+                <select
+                  value={diaSeleccionat}
+                  onChange={(e) => setDiaSeleccionat(e.target.value)}
+                  className="w-full appearance-none pl-4 pr-10 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm font-medium cursor-pointer"
+                >
+                  {dies.map((dia) => (
+                    <option key={dia} value={dia}>
+                      {dia === "Tots"
+                        ? "Tots els dies"
+                        : dia === "Repeteix"
+                          ? "Es repeteix cada dia"
+                          : formatarData(dia)}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
+                  &#xe5c5;
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
+                Categoria:
+              </label>
+              <div className="relative w-60">
+                <select
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  className="w-full appearance-none pl-4 pr-10 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm font-medium cursor-pointer"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
+                  &#xe5c5;
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
+                Ubicació:
+              </label>
+              <div className="relative w-60">
+                <select
+                  value={ubicacio}
+                  onChange={(e) => setUbicacio(e.target.value)}
+                  className="w-full appearance-none pl-4 pr-10 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm font-medium cursor-pointer"
+                >
+                  {ubicacions.map((ubi) => (
+                    <option key={ubi} value={ubi}>
+                      {ubi}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
+                  &#xe5c5;
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col md:flex-row w-full xl:w-auto gap-6 items-center justify-between xl:justify-end grow">
-            <label className="flex items-center gap-2 cursor-pointer group">
+          {/* cerca + checkbox  */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-evenly">
+            <div className="relative w-full sm:w-96">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#432918]/50">
+                &#xe8b6;
+              </span>
+              <input
+                type="text"
+                placeholder="Cercar activitats..."
+                value={cerca}
+                onChange={(e) => setCerca(e.target.value)}
+                className="w-full pl-12 pr-4 py-2 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] focus:border-transparent transition-all bg-[#fdfaf3]"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer group shrink-0">
               <input
                 type="checkbox"
                 checked={ocultarFinalitzades}
                 onChange={(e) => setOcultarFinalitzades(e.target.checked)}
                 className="w-5 h-5 rounded border-[#432918]/30 text-[#ba5940] focus:ring-[#ba5940] transition-colors cursor-pointer"
               />
-              <span className="text-sm font-semibold text-[#432918]/80 group-hover:text-[#ba5940] transition-colors">
+              <span className="text-sm font-semibold text-[#432918]/80 group-hover:text-[#ba5940] transition-colors whitespace-nowrap">
                 Ocultar activitats finalitzades
               </span>
             </label>
-
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-[#432918]/80 hidden sm:block">
-                  Categoria:
-                </label>
-                <div className="relative w-full sm:w-48">
-                  <select
-                    value={categoria}
-                    onChange={(e) => setCategoria(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm font-medium cursor-pointer"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
-                    &#xe5c5;
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-[#432918]/80 hidden sm:block">
-                  Ubicació:
-                </label>
-                <div className="relative w-full sm:w-56">
-                  <select
-                    value={ubicacio}
-                    onChange={(e) => setUbicacio(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm font-medium cursor-pointer"
-                  >
-                    {ubicacions.map((ubi) => (
-                      <option key={ubi} value={ubi}>
-                        {ubi}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 pointer-events-none">
-                    &#xe5c5;
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -258,7 +347,9 @@ function Activitats() {
                   <span className="material-symbols-outlined text-[#ba5940] text-3xl">
                     &#xe878;
                   </span>
-                  {formatarData(dataStr)}
+                  {dataStr === "Repeteix"
+                    ? "Es repeteix tots els dies de la fira"
+                    : formatarData(dataStr)}
                 </h2>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -293,7 +384,9 @@ function Activitats() {
                               &#xe192;
                             </span>
                             <span className="font-normal text-[#432918]">
-                              {activitat.hora} h
+                              {activitat.hores_dia.length > 1
+                                ? activitat.hores_dia.join(", ") + " h"
+                                : activitat.hora + " h"}
                             </span>
                           </li>
                           <li className="flex items-center gap-3">
@@ -306,7 +399,6 @@ function Activitats() {
                           </li>
                         </ul>
 
-                        {/* Etiquetes d'inscripció segons estat (només si l'usuari té sessió iniciada) */}
                         {activitat.aforament && isLoggedIn && (
                           <div className="mt-4">
                             {!activitat.inscripcio_usuari && (
@@ -317,7 +409,6 @@ function Activitats() {
                                 Inscripcions obertes
                               </div>
                             )}
-
                             {activitat.inscripcio_usuari?.estat ===
                               "acceptada" && (
                               <div className="flex items-center gap-2 bg-blue-100 text-blue-800 w-fit px-3 py-1.5 rounded-lg text-sm font-bold border border-blue-200">
@@ -327,7 +418,6 @@ function Activitats() {
                                 Inscripció acceptada
                               </div>
                             )}
-
                             {activitat.inscripcio_usuari?.estat ===
                               "espera" && (
                               <div className="flex items-center gap-2 bg-orange-100 text-orange-800 w-fit px-3 py-1.5 rounded-lg text-sm font-bold border border-orange-200">
