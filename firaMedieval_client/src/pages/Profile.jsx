@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import userService from "../services/userService";
 import reservaService from "../services/reservaAutocaravanaService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
 
 function Profile() {
@@ -19,8 +19,8 @@ function Profile() {
   const [reserva, setReserva] = useState(null);
   const [loadingReserva, setLoadingReserva] = useState(true);
   const [cancelant, setCancelant] = useState(false);
+  const location = useLocation();
 
-  // NOU: modal d'edició de reserva
   const [showEditReserva, setShowEditReserva] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [savingReserva, setSavingReserva] = useState(false);
@@ -85,7 +85,6 @@ function Profile() {
     }
   };
 
-  // NOU: obrir modal d'edició
   const openEditReserva = () => {
     setEditForm({
       marca_vehicle: reserva.marca_vehicle,
@@ -100,7 +99,6 @@ function Profile() {
     setShowEditReserva(true);
   };
 
-  // NOU: desar canvis de la reserva
   const handleSaveReserva = async () => {
     setEditError(null);
 
@@ -184,7 +182,7 @@ function Profile() {
           </div>
         </div>
         <IoArrowBack
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(location.state?.from ?? "/")}
           className="absolute top-6 left-6 text-3xl text-white cursor-pointer"
         />
       </div>

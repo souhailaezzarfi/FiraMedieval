@@ -1,18 +1,36 @@
-import { useState } from "react";
-import { z } from "zod";
+import { useState, useRef } from "react";
+import contacteService from "../services/contacteService";
 
-const contacteSchema = z.object({
-  nom: z.string().min(2, "El nom ha de tenir almenys 2 caràcters"),
-  telefon: z.string().optional(),
-  email: z.email("Introduïu una adreça de correu vàlida"),
-  missatge: z.string().min(10, "El missatge és massa curt"),
-});
 
 function Contacte() {
   const [estatEnviament, setEstatEnviament] = useState("idle");
   const [errors, setErrors] = useState({});
+  const formRef = useRef(null);
 
-  const gestionarEnviament = (e) => {
+  const validar = (dades) => {
+    const errors = {};
+
+    if (!dades.nom.trim()) {
+      errors.nom = "El nom és obligatori";
+    } else if (dades.nom.trim().length < 2) {
+      errors.nom = "El nom ha de tenir almenys 2 caràcters";
+    }
+
+    if (!dades.email.trim()) {
+      errors.email = "El correu electrònic és obligatori";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dades.email)) {
+      errors.email = "Introduïu una adreça de correu vàlida";
+    }
+
+    if (!dades.missatge.trim()) {
+      errors.missatge = "El missatge és obligatori";
+    } else if (dades.missatge.trim().length < 10) {
+      errors.missatge = "El missatge és massa curt";
+    }
+
+    return errors;
+  };
+  const gestionarEnviament = async (e) => {
     e.preventDefault();
 
     const dadesFormulari = {
@@ -22,25 +40,33 @@ function Contacte() {
       missatge: e.target.missatge.value,
     };
 
-    const resultatValidacio = contacteSchema.safeParse(dadesFormulari);
-
-    if (!resultatValidacio.success) {
-      const nousErrors = {};
-      resultatValidacio.error.issues.forEach((issue) => {
-        nousErrors[issue.path[0]] = issue.message;
-      });
+    const nousErrors = validar(dadesFormulari);
+    if (Object.keys(nousErrors).length > 0) {
       setErrors(nousErrors);
       return;
     }
-
     setErrors({});
     setEstatEnviament("loading");
 
-    setTimeout(() => {
+    try {
+      await contacteService.enviar(dadesFormulari);
       setEstatEnviament("success");
-    }, 2000);
+      formRef.current.reset();
+      setTimeout(() => {
+        setEstatEnviament("idle");
+      }, 3000);
+    } catch (error) {
+      if (error.response?.status === 422) {
+        const backendErrors = error.response.data.errors;
+        const nousErrors = {};
+        Object.keys(backendErrors).forEach((key) => {
+          nousErrors[key] = backendErrors[key][0];
+        });
+        setErrors(nousErrors);
+      }
+      setEstatEnviament("idle");
+    }
   };
-
   const netejarError = (e) => {
     const { name } = e.target;
     if (errors[name]) {
@@ -191,6 +217,7 @@ function Contacte() {
             </h2>
 
             <form
+              ref={formRef}
               className="space-y-6 flex flex-col flex-1"
               onSubmit={gestionarEnviament}
               noValidate
@@ -213,6 +240,9 @@ function Contacte() {
                     }`}
                     placeholder="El vostre nom complet"
                   />
+                  {errors.nom && (
+                    <p className="text-red-500 text-sm mt-1">{errors.nom}</p>
+                  )}
                 </div>
 
                 <div>
@@ -253,6 +283,9 @@ function Contacte() {
                     }`}
                     placeholder="La vostra adreça de correu"
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                  )}
                 </div>
 
                 <div>
@@ -275,6 +308,11 @@ function Contacte() {
                     }`}
                     placeholder="Com us podem ajudar?"
                   ></textarea>
+                  {errors.missatge && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.missatge}
+                    </p>
+                  )}
                 </div>
               </div>
 

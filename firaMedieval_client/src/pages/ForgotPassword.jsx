@@ -6,10 +6,12 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     try {
       await api.post("/forgot-password", { email });
       setSuccess(true);
@@ -19,6 +21,8 @@ function ForgotPassword() {
       } else {
         setError("Hi ha hagut un error. Torna-ho a intentar.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,9 +62,10 @@ function ForgotPassword() {
 
               <button
                 type="submit"
-                className="bg-[#d7b731] text-white font-bold py-2 rounded hover:bg-[#ba5940] transition-colors"
+                disabled={loading}
+                className="bg-[#461615] text-white font-bold py-2 rounded hover:bg-[#461615]/90 transition-colors disabled:opacity-50"
               >
-                Enviar enllaç
+                {loading ? "Enviant..." : "Enviar enllaç"}
               </button>
             </form>
           </>
