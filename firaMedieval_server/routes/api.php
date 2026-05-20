@@ -10,11 +10,14 @@ use App\Http\Controllers\Api\AparcamentController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\InscripcioController;
 use Illuminate\Support\Facades\Password;
+use App\Http\Controllers\Api\ContacteController; 
 
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/aparcament-actiu', [AparcamentController::class, 'actiu']);
+Route::post('/contacte', [ContacteController::class, 'enviar']);
+
 
 // Rutes d'activitats per als visitants
 Route::get('/activitats', [ActivitatController::class, 'index']);
