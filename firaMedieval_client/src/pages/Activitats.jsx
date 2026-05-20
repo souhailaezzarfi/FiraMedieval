@@ -151,7 +151,7 @@ function Activitats() {
       diaSeleccionat === "Repeteix"
         ? Object.values(
             filtrades.reduce((acc, a) => {
-              if (!acc[a.id]) acc[a.id] = a;
+              if (!acc[a.id]) acc[acc[a.id]] = a;
               return acc;
             }, {}),
           )
@@ -217,9 +217,8 @@ function Activitats() {
       <div className="w-full">
         {/* Barra de filtres */}
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm mb-12 border border-[#432918]/10 flex flex-col gap-4">
-          {/* Dia, categoria i ubicacio */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between w-full">
+            <div className="flex flex-row items-center justify-between w-full sm:w-auto gap-3">
               <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
                 Dia:
               </label>
@@ -245,7 +244,7 @@ function Activitats() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-row items-center justify-between w-full sm:w-auto gap-3">
               <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
                 Categoria:
               </label>
@@ -267,7 +266,7 @@ function Activitats() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-row items-center justify-between w-full sm:w-auto gap-3">
               <label className="text-sm font-semibold text-[#432918]/80 whitespace-nowrap">
                 Ubicació:
               </label>
@@ -348,7 +347,7 @@ function Activitats() {
                     &#xe878;
                   </span>
                   {dataStr === "Repeteix"
-                    ? "Es repeteix tots els dies de la fira"
+                    ? "Es repeteix tous els dies de la fira"
                     : formatarData(dataStr)}
                 </h2>
 

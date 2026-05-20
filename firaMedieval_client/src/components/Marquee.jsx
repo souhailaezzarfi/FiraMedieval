@@ -44,7 +44,7 @@ export default function Marquee() {
   return (
     <section>
       <div className="relative left-1/2 -translate-x-1/2 w-screen overflow-hidden bg-[#EAD9B0] py-4">
-        <div className="flex w-max animate-marquee whitespace-nowrap">
+        <div className="flex w-max animate-marquee md:animate-marquee whitespace-nowrap [animation-duration:15s] md:[animation-duration:30s]">
           {doubled.map((img, i) => (
             <span key={i} className="mx-6 inline-flex items-center">
               <img
