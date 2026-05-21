@@ -27,7 +27,7 @@ function Navbar() {
             <span className="font-serif font-bold text-3xl text-white tracking-wide leading-none">
               Fira Medieval
             </span>
-            <span className="font-sans text-[12px] font-bold text-[#D4B06A] tracking-[0.41em] uppercase leading-none mt-0.5 pl-0.5">
+            <span className="font-sans text-[16px] font-bold text-[#ead9b0] tracking-[0.5em] uppercase leading-none scale-y-75 transform origin-top text-center">
               Hostalric
             </span>
           </Link>

@@ -2,8 +2,28 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import userService from "../services/userService";
 import reservaService from "../services/reservaAutocaravanaService";
-import { useNavigate, useLocation } from "react-router-dom";
-import { IoArrowBack } from "react-icons/io5";
+import api from "../services/api";
+import { useNavigate } from "react-router-dom";
+
+const formatarDataCurta = (dataString) => {
+  if (!dataString) return "";
+  const dataObj = new Date(dataString.replace(" ", "T"));
+  const diaSetmana = dataObj.toLocaleDateString("ca-ES", { weekday: "long" });
+  const diaSetmanaCap =
+    diaSetmana.charAt(0).toUpperCase() + diaSetmana.slice(1);
+  const dia = String(dataObj.getDate()).padStart(2, "0");
+  const mes = String(dataObj.getMonth() + 1).padStart(2, "0");
+  return `${diaSetmanaCap} ${dia}/${mes}`;
+};
+
+const formatarHora = (dataString) => {
+  if (!dataString) return "";
+  const dataObj = new Date(dataString.replace(" ", "T"));
+  return dataObj.toLocaleTimeString("ca-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 function Profile() {
   const { user, logout } = useAuth();
@@ -19,7 +39,9 @@ function Profile() {
   const [reserva, setReserva] = useState(null);
   const [loadingReserva, setLoadingReserva] = useState(true);
   const [cancelant, setCancelant] = useState(false);
-  const location = useLocation();
+
+  const [inscripcions, setInscripcions] = useState([]);
+  const [loadingInscripcions, setLoadingInscripcions] = useState(true);
 
   const [showEditReserva, setShowEditReserva] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -49,6 +71,22 @@ function Profile() {
       })
       .catch(() => setReserva(null))
       .finally(() => setLoadingReserva(false));
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || user.role === "admin") return;
+    const fetchInscripcions = async () => {
+      try {
+        setLoadingInscripcions(true);
+        const response = await api.get("/inscripcions");
+        setInscripcions(response.data ?? []);
+      } catch (err) {
+        console.error("Error carregant les inscripcions:", err);
+      } finally {
+        setLoadingInscripcions(false);
+      }
+    };
+    fetchInscripcions();
   }, [user]);
 
   const handleUpdate = async (e) => {
@@ -82,6 +120,22 @@ function Profile() {
       alert(err.response?.data?.message ?? "Error en cancel·lar la reserva.");
     } finally {
       setCancelant(false);
+    }
+  };
+
+  const handleEliminarInscripcio = async (idInscripcio) => {
+    if (
+      !window.confirm(
+        "Segur que vols cancel·lar la inscripció a aquesta activitat?",
+      )
+    )
+      return;
+    try {
+      await api.delete(`/inscripcions/${idInscripcio}`);
+      setInscripcions((prev) => prev.filter((ins) => ins.id !== idInscripcio));
+    } catch (err) {
+      console.error("Error en eliminar la inscripció:", err);
+      alert("No s'ha pogut cancel·lar la inscripció.");
     }
   };
 
@@ -120,38 +174,42 @@ function Profile() {
   };
 
   const estatBadge = (estat) => {
-    if (estat === "confirmada")
+    if (estat === "confirmada" || [...estat].join("").includes("acceptada"))
       return (
-        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-          Confirmada
-        </span>
+        <div className="bg-green-100 text-green-800 border border-green-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+          <span className="material-symbols-outlined text-[18px]">
+            &#xe86c;
+          </span>
+          Inscripció acceptada
+        </div>
       );
     if (estat === "espera")
       return (
-        <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
-          En espera
-        </span>
+        <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+          <span className="material-symbols-outlined text-[18px]">
+            &#xe192;
+          </span>
+          En llista d'espera
+        </div>
       );
     return (
-      <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-medium">
+      <div className="bg-red-100 text-red-800 border border-red-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+        <span className="material-symbols-outlined text-[18px]">&#xe5cd;</span>
         Cancel·lada
-      </span>
+      </div>
     );
   };
 
   const formatDate = (d) => (d ? new Date(d).toLocaleDateString("ca-ES") : "—");
 
   const initials = user
-    ? `${user.nom?.charAt(0) || ""}${user.cognoms?.charAt(0) || ""}`
+    ? `${user.nom?.charAt(0) || ""}${user.cognoms?.charAt(0) || ""}`.toUpperCase()
     : "?";
 
   return (
-    <div
-      className="min-h-screen bg-[#f7f2e8]"
-      style={{ fontFamily: "'Georgia', serif" }}
-    >
+    <div className="min-h-screen bg-[#f7f2e8] text-[#432918] pb-12">
       <div
-        className="relative h-48 flex items-end"
+        className="relative h-40 sm:h-64 flex items-end w-full"
         style={{
           background:
             "linear-gradient(135deg, #ba5940 0%, #8b4513 40%, #d7b731 100%)",
@@ -164,219 +222,354 @@ function Profile() {
             backgroundSize: "20px 20px",
           }}
         />
-        <div className="max-w-4xl mx-auto px-6 pb-0 w-full flex items-end gap-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-4 sm:pb-6 w-full flex items-end gap-4 sm:gap-6 relative">
           <div
-            className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold shadow-xl border-4 border-white translate-y-12 shrink-0"
+            className="w-18 h-18 sm:w-28 sm:h-28 rounded-full flex items-center justify-center text-2xl sm:text-4xl font-bold shadow-xl border-4 border-white shrink-0 font-serif tracking-[0.2em] pl-[0.2em]"
             style={{ background: "#432918", color: "#d7b731" }}
           >
             {initials}
           </div>
-          <div className="pb-4 text-white">
-            <p className="text-xs uppercase tracking-widest opacity-70 mb-1">
+          <div className="pb-1 sm:pb-2 text-white">
+            <p className="text-[10px] sm:text-xs uppercase tracking-widest opacity-80 mb-0.5 font-bold">
               Perfil d'usuari
             </p>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl sm:text-4xl font-serif font-bold leading-tight drop-shadow-md">
               {user?.nom} {user?.cognoms}
             </h1>
-            <p className="text-sm opacity-75">{user?.email}</p>
+            <p className="text-xs sm:text-sm opacity-90 font-medium break-all">
+              {user?.email}
+            </p>
           </div>
         </div>
-        <IoArrowBack
-          onClick={() => navigate(location.state?.from ?? "/")}
-          className="absolute top-6 left-6 text-3xl text-white cursor-pointer"
-        />
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 pt-20 pb-12 space-y-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
-          <div className="px-8 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#d7b731]">
-              person
-            </span>
-            <h2 className="text-lg font-bold text-[#432918]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 space-y-12">
+        <div className="bg-white/50 rounded-2xl border border-[#432918]/20 p-5 sm:p-10 space-y-12 shadow-xs">
+          <div className="space-y-5">
+            <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                &#xe853;
+              </span>
               Dades personals
             </h2>
+            <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+              <form onSubmit={handleUpdate} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {[
+                    { label: "Nom", key: "nom", type: "text" },
+                    { label: "Cognoms", key: "cognoms", type: "text" },
+                    { label: "Telèfon", key: "telefon", type: "tel" },
+                    { label: "Correu electrònic", key: "email", type: "email" },
+                  ].map(({ label, key, type }) => (
+                    <div key={key} className="flex flex-col gap-1.5">
+                      <label className="text-xs sm:text-sm font-bold text-[#432918]">
+                        {label}
+                      </label>
+                      <input
+                        type={type}
+                        value={formData[key]}
+                        onChange={(e) =>
+                          setFormData({ ...formData, [key]: e.target.value })
+                        }
+                        className="w-full px-4 py-3 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] focus:border-transparent transition-all bg-[#fdfaf3]"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 pt-2">
+                  <button
+                    type="submit"
+                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      &#xe161;
+                    </span>
+                    Desar canvis
+                  </button>
+                  {saved && (
+                    <span className="text-xs sm:text-sm text-green-700 font-bold flex items-center gap-1.5 bg-green-100 px-3 py-1.5 rounded-lg border border-green-200">
+                      <span className="material-symbols-outlined text-base">
+                        &#xe5ca;
+                      </span>
+                      Desat correctament
+                    </span>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
 
-          <form onSubmit={handleUpdate} className="p-8">
-            <div className="grid md:grid-cols-2 gap-5">
-              {[
-                { label: "Nom", key: "nom", type: "text" },
-                { label: "Cognoms", key: "cognoms", type: "text" },
-                { label: "Telèfon", key: "telefon", type: "tel" },
-                { label: "Email", key: "email", type: "email" },
-              ].map(({ label, key, type }) => (
-                <div key={key} className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[#8b6a4a]">
-                    {label}
-                  </label>
-                  <input
-                    type={type}
-                    value={formData[key]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [key]: e.target.value })
-                    }
-                    className="border border-[#e8d9b5] rounded-lg px-4 py-3 bg-[#faf7f2] text-[#432918] focus:outline-none focus:border-[#d7b731] transition-colors"
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex items-center gap-4">
-              <button
-                type="submit"
-                className="bg-[#432918] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#d7b731] transition-colors hover:scale-105 transform"
-              >
-                Desar canvis
-              </button>
-              {saved && (
-                <span className="text-sm text-green-600 font-medium">
-                  Canvis desats correctament
-                </span>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {user?.role !== "admin" && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* RESERVES */}
-            <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#d7b731]">
-                  local_parking
-                </span>
-                <h3 className="text-lg font-bold text-[#432918]">
-                  Les meves reserves
-                </h3>
-              </div>
-              <div className="p-6 space-y-3">
-                {loadingReserva ? (
-                  <p className="text-sm text-[#8b6a4a] text-center">
-                    Carregant...
-                  </p>
-                ) : reserva ? (
-                  <>
-                    <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#d7b731]">
-                      <div className="flex-1">
-                        <p className="font-semibold text-[#432918]">
-                          {reserva.marca_vehicle} {reserva.model_vehicle}
-                        </p>
-                        <p className="text-sm text-[#8b6a4a] mt-0.5">
-                          Matrícula: {reserva.matricula}
-                        </p>
-                        <p className="text-sm text-[#8b6a4a]">
-                          Arribada: {formatDate(reserva.data_arribada)}
-                        </p>
-                        <p className="text-sm text-[#8b6a4a]">
-                          Sortida: {formatDate(reserva.data_sortida)}
+          {user?.role !== "admin" && (
+            <>
+              <div className="space-y-5">
+                <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                    &#xe54f;
+                  </span>
+                  La meva reserva d'aparcament
+                </h2>
+                <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+                  <div className="space-y-4">
+                    {loadingReserva ? (
+                      <div className="w-full flex justify-center items-center py-4">
+                        <svg
+                          className="animate-spin h-6 w-6 text-[#ba5940]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </div>
+                    ) : reserva ? (
+                      <div className="border border-[#432918]/20 p-5 rounded-2xl shadow-sm bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#ba5940]/10 flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-xl sm:text-2xl text-[#ba5940]">
+                              &#xeb3c;
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-base sm:text-lg text-[#432918] truncate">
+                              {reserva.marca_vehicle} - {reserva.model_vehicle}
+                            </p>
+                            <p className="text-xs text-[#8b6a4a] mt-0.5 font-medium">
+                              Matrícula: {reserva.matricula}
+                            </p>
+                            <p className="text-xs sm:text-sm text-[#432918]/80 mt-1 font-medium flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[15px] text-[#ba5940]">
+                                &#xe192;
+                              </span>
+                              {formatDate(reserva.data_arribada)} -{" "}
+                              {formatDate(reserva.data_sortida)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3 self-end sm:items-center sm:self-center mt-1 sm:mt-0">
+                          {estatBadge(reserva.estat)}
+                          <button
+                            onClick={openEditReserva}
+                            className="p-2 text-[#432918]/60 bg-[#fdfaf3] border border-[#432918]/20 rounded-xl hover:text-[#ba5940] hover:border-[#ba5940] transition-colors cursor-pointer flex items-center h-11 w-11 justify-center"
+                          >
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                              &#xe3c9;
+                            </span>
+                          </button>
+                          <button
+                            onClick={handleCancelReserva}
+                            disabled={cancelant}
+                            className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center disabled:opacity-50"
+                          >
+                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                              &#xe872;
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-[#432918]/20">
+                        <span className="material-symbols-outlined text-3xl text-[#432918]/20 mb-2 flex justify-center">
+                          &#xe56c;
+                        </span>
+                        <p className="text-xs font-bold text-[#432918]/60">
+                          No tens cap reserva d'aparcament activa.
                         </p>
                       </div>
-                      {estatBadge(reserva.estat)}
-                    </div>
-                    {/* editar */}
-                    <button
-                      onClick={openEditReserva}
-                      className="w-full text-sm text-[#432918] border border-[#e8d9b5] rounded-lg py-2 hover:bg-[#faf7f2] transition-colors"
-                    >
-                      Editar reserva
-                    </button>
-                    <button
-                      onClick={handleCancelReserva}
-                      disabled={cancelant}
-                      className="w-full text-sm text-red-600 border border-red-300 rounded-lg py-2 hover:bg-red-50 transition-colors disabled:opacity-60"
-                    >
-                      {cancelant ? "Cancel·lant..." : "Cancel·lar reserva"}
-                    </button>
-                  </>
-                ) : (
-                  <p className="text-sm text-[#8b6a4a] text-center pt-2">
-                    No tens cap reserva activa
-                  </p>
-                )}
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* INSCRIPCIONS */}
-            <div className="bg-white rounded-2xl shadow-sm border border-[#e8d9b5] overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#e8d9b5] flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#d7b731]">
-                  event_available
-                </span>
-                <h3 className="text-lg font-bold text-[#432918]">
+              <div className="space-y-5">
+                <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+                    &#xe878;
+                  </span>
                   Les meves inscripcions
-                </h3>
+                </h2>
+                <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+                  <div className="space-y-4">
+                    {loadingInscripcions ? (
+                      <div className="w-full flex justify-center items-center py-4">
+                        <svg
+                          className="animate-spin h-6 w-6 text-[#ba5940]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </div>
+                    ) : inscripcions.length > 0 ? (
+                      inscripcions.map((ins) => (
+                        <div
+                          key={ins.id}
+                          className="border border-[#432918]/20 p-4 sm:p-5 rounded-2xl shadow-sm bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                        >
+                          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#ba5940]/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <span className="material-symbols-outlined text-xl text-[#ba5940]">
+                                &#xf3de;
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-bold text-sm sm:text-base text-[#432918] break-words">
+                                {ins.activitat?.nom || "Activitat Medieval"}
+                              </p>
+                              <p className="text-xs sm:text-sm text-[#432918]/80 mt-1 font-medium flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-[15px] text-[#ba5940]">
+                                  &#xe192;
+                                </span>
+                                {ins.horari?.hora_inici
+                                  ? `${formatarDataCurta(ins.horari.hora_inici)} • ${formatarHora(ins.horari.hora_inici)}`
+                                  : "Sessió única"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 sm:gap-3 self-end sm:items-center sm:self-center shrink-0">
+                            {estatBadge(
+                              ins.estat === "espera" ? "espera" : "confirmada",
+                            )}
+                            <button
+                              onClick={() => handleEliminarInscripcio(ins.id)}
+                              className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">
+                                &#xe872;
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-[#432918]/20">
+                        <span className="material-symbols-outlined text-3xl text-[#432918]/20 mb-2">
+                          &#xe876;
+                        </span>
+                        <p className="text-xs font-bold text-[#432918]/60">
+                          No tens cap inscripció a activitats realitzada.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="p-6 space-y-3">
-                <div className="flex items-start gap-4 p-4 bg-[#faf7f2] rounded-xl border-l-4 border-[#432918]">
-                  <div className="flex-1">
-                    <p className="font-semibold text-[#432918]">
-                      Taller Medieval
+            </>
+          )}
+
+          {user?.role !== "admin" && (
+            <div className="space-y-5">
+              <div className="border border-red-300 rounded-2xl p-6 bg-red-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-2xs">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-red-200/60 flex items-center justify-center shrink-0 text-red-600/70">
+                    <span className="material-symbols-outlined text-xl">
+                      &#xe92b;
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg text-red-600/70">
+                      Eliminar el meu compte
                     </p>
-                    <p className="text-sm text-[#8b6a4a] mt-0.5">
-                      Divendres 3 d'abril
+                    <p className="text-sm text-[#432918]/80 font-medium mt-1 leading-relaxed">
+                      Aquesta acció no es pot revertir. S'eliminaran totes les
+                      dades i reserves associades a aquest usuari.
                     </p>
                   </div>
-                  <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium">
-                    En espera
-                  </span>
                 </div>
-
-                <p className="text-sm text-[#8b6a4a] text-center pt-2">
-                  No tens més inscripcions
-                </p>
+                <button
+                  onClick={async () => {
+                    const deleted = await handleDelete();
+                    if (deleted) {
+                      logout();
+                      navigate("/");
+                    }
+                  }}
+                  className="bg-[#461615] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md cursor-pointer self-start sm:self-center shrink-0 text-sm"
+                >
+                  Eliminar compte
+                </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {user?.role !== "admin" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
-            <div className="p-8 flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-[#432918]">Eliminar compte</p>
-                <p className="text-sm text-[#8b6a4a]">
-                  Aquesta acció és irreversible
-                </p>
-              </div>
-              <button
-                onClick={async () => {
-                  await handleDelete();
-                  logout();
-                  navigate("/");
-                }}
-                className="border-2 border-red-400 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-600 hover:text-white transition-colors"
-              >
-                Eliminar compte
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* MODAL EDICIÓ RESERVA */}
       {showEditReserva && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div
-            className="bg-[#faf7f2] rounded-2xl w-full max-w-lg border border-[#e8d9b5] max-h-[90vh] overflow-y-auto"
-            style={{ fontFamily: "'Georgia', serif" }}
-          >
-            <div className="px-8 py-6 border-b border-[#e8d9b5]">
-              <h2 className="text-xl font-bold text-[#432918]">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#f7f2e8] rounded-3xl w-full max-w-lg border border-[#432918]/20 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="px-6 sm:px-8 py-5 border-b border-[#432918]/10 flex items-center justify-between sticky top-0 bg-[#f7f2e8] z-10">
+              <h2 className="text-xl font-serif font-bold text-[#432918] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#ba5940] text-2xl sm:text-3xl">
+                  &#xe3c9;
+                </span>
                 Editar reserva
               </h2>
+              <button
+                onClick={() => setShowEditReserva(false)}
+                className="text-[#432918]/40 hover:text-[#ba5940] transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-2xl sm:text-3xl">
+                  &#xe5cd;
+                </span>
+              </button>
             </div>
 
-            <div className="px-8 py-6 space-y-4">
+            <div className="px-6 sm:px-8 py-5 sm:py-6 space-y-4 bg-white">
               {editError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">
+                <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mt-2 mb-8 text-[#ba5940] font-bold text-xs sm:text-sm flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">
+                    &#xe000;
+                  </span>
                   {editError}
                 </div>
               )}
 
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { key: "marca_vehicle", label: "Marca", type: "text" },
+                  { key: "model_vehicle", label: "Model", type: "text" },
+                ].map(({ key, label, type }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-xs sm:text-sm font-bold text-[#432918]/80">
+                      {label}
+                    </label>
+                    <input
+                      type={type}
+                      value={editForm[key] ?? ""}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, [key]: e.target.value }))
+                      }
+                      className="w-full px-3 sm:px-4 py-2 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] bg-[#fdfaf3] text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+
               {[
-                { key: "marca_vehicle", label: "Marca", type: "text" },
-                { key: "model_vehicle", label: "Model", type: "text" },
                 { key: "matricula", label: "Matrícula", type: "text" },
                 { key: "procedencia", label: "Procedència", type: "text" },
                 {
@@ -384,15 +577,9 @@ function Profile() {
                   label: "Total persones",
                   type: "number",
                 },
-                {
-                  key: "data_arribada",
-                  label: "Data d'arribada",
-                  type: "date",
-                },
-                { key: "data_sortida", label: "Data de sortida", type: "date" },
               ].map(({ key, label, type }) => (
-                <div key={key} className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[#8b6a4a]">
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-xs sm:text-sm font-bold text-[#432918]/80">
                     {label}
                   </label>
                   <input
@@ -402,25 +589,59 @@ function Profile() {
                     onChange={(e) =>
                       setEditForm((f) => ({ ...f, [key]: e.target.value }))
                     }
-                    className="border border-[#e8d9b5] rounded-lg px-4 py-3 bg-white text-[#432918] focus:outline-none focus:border-[#d7b731] transition-colors"
+                    className="border border-[#432918]/20 rounded-xl px-3 sm:px-4 py-2 bg-[#fdfaf3] text-sm transition-all"
                   />
                 </div>
               ))}
+
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  {
+                    key: "data_arribada",
+                    label: "Data d'arribada",
+                    type: "date",
+                  },
+                  {
+                    key: "data_sortida",
+                    label: "Data de sortida",
+                    type: "date",
+                  },
+                ].map(({ key, label, type }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-xs sm:text-sm font-bold text-[#432918]/80">
+                      {label}
+                    </label>
+                    <input
+                      type={type}
+                      value={editForm[key] ?? ""}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, [key]: e.target.value }))
+                      }
+                      className="border border-[#432918]/20 rounded-xl px-3 sm:px-4 py-2 bg-[#fdfaf3] text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="px-8 py-4 border-t border-[#e8d9b5] flex justify-end gap-3">
+            <div className="px-6 sm:px-8 py-4 border-t border-[#432918]/10 flex justify-end gap-3 sticky bottom-0 bg-[#f7f2e8] z-10">
               <button
                 onClick={() => setShowEditReserva(false)}
-                className="border border-[#e8d9b5] text-[#8b6a4a] px-5 py-2 rounded-full hover:bg-[#f0e9d8] transition-colors"
+                className="bg-white border border-[#432918]/20 text-[#432918] px-5 py-2 rounded-full font-bold text-xs sm:text-sm hover:bg-[#fdfaf3] transition-all cursor-pointer"
               >
                 Cancel·lar
               </button>
               <button
                 onClick={handleSaveReserva}
                 disabled={savingReserva}
-                className="bg-[#432918] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#d7b731] transition-colors disabled:opacity-60"
+                className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-2.5 px-5 rounded-full transition-colors flex justify-center items-center gap-1.5 shadow-sm disabled:opacity-60 cursor-pointer text-xs sm:text-sm"
               >
                 {savingReserva ? "Desant..." : "Desar canvis"}
+                {!savingReserva && (
+                  <span className="material-symbols-outlined text-base">
+                    &#xe161;
+                  </span>
+                )}
               </button>
             </div>
           </div>
