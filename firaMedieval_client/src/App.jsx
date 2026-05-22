@@ -4,8 +4,10 @@ import {
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -20,19 +22,31 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import AdminPanel from "./pages/AdminPanel";
 
+// Forçar l'scroll a dalt de la pàgina
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function PublicRoute() {
   const { user } = useAuth();
   if (user?.role === "admin") return <Navigate to="/admin" replace />;
   return (
     <div className="min-h-screen flex flex-col bg-[#e1d7bc]">
       <Navbar />
-      <main className="grow pt-18">
+      <main className="grow pt-17">
         <Outlet />
       </main>
       <Footer />
     </div>
   );
 }
+
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
 
@@ -50,6 +64,8 @@ function App() {
         v7_relativeSplatPath: true,
       }}
     >
+      <ScrollToTop />
+
       <Routes>
         {/* admin no puede entrar */}
         <Route element={<PublicRoute />}>
@@ -62,9 +78,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/perfil" element={<Profile />} />
         </Route>
-
-        <Route path="/perfil" element={<Profile />} />
 
         {/* solo admin puede entrar */}
         <Route

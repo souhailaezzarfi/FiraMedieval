@@ -9,12 +9,16 @@ import torre from "../assets/cards/torre-fares.webp";
 import espectacles from "../assets/cards/espectacles.png";
 
 function Home() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const features = [
     {
       img: espectacles,
       titulo: "Espectacles",
       descripcio:
-        "Bruixes, dracs i malabaristes il·luminen els carrers i la nit de la vila amb espectacles únics per a tota la família.",
+        "Bruixes, dracs i malabaristes il·luminen la nit amb espectacles uniques que et deixaran sense paraules.",
     },
     {
       img: mercat,
@@ -40,48 +44,50 @@ function Home() {
 
   return (
     <div className="w-full text-[#432918] bg-[#f7f2e8]">
-      <section className="relative h-[92vh] w-full flex items-center bg-[#461615] text-white">
-        <div className="w-full grid md:grid-cols-2 px-8 md:px-16 lg:px-24 md:pt-0 h-full">
-          {/* LEFT */}
-          <div className="flex flex-col items-start justify-center">
-            <div className="w-180 h-1 bg-[#EAD9B0] mb-6 rounded"></div>
-            <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4">
+      <section className="relative h-[95vh] w-full flex items-center bg-[#461615] text-white py-12 md:py-0">
+        <div className="max-w-400 mx-auto w-full grid md:grid-cols-2 px-6 sm:px-8 md:px-16 lg:px-24 h-full justify-items-center items-center">
+          {/* COLUMNA ESQUERRA */}
+          <div className="flex flex-col text-center items-center md:text-left md:items-start justify-center h-full mt-4 md:mt-0 md:justify-self-end md:mr-12 lg:mr-16">
+            <div className="hidden md:block w-180 h-1 bg-[#EAD9B0] mb-6 rounded"></div>
+
+            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 leading-tight">
               XXIX FIRA MEDIEVAL D'HOSTALRIC
             </h1>
 
-            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-2 text-[#EAD9B0]">
+            <h2 className="font-serif text-2xl md:text-4xl font-bold mb-2 text-[#EAD9B0]">
               3 al 5 d'abril del 2026
             </h2>
-            <span className="text-xs uppercase tracking-widest bg-[#EAD9B0]/20 border border-[#EAD9B0]/40 text-[#EAD9B0] px-4 py-1 rounded-full mb-4">
+
+            <span className="text-xs uppercase tracking-widest bg-[#EAD9B0]/20 border border-[#EAD9B0]/40 text-[#EAD9B0] px-4 py-1 rounded-full mb-6 md:mb-4">
               Hostalric · Catalunya
             </span>
-            <div className="max-w-xl">
-              <p className="text-2xl font-bold mb-5">
+
+            <div className="hidden md:block max-w-xl">
+              <p className="text-xl md:text-2xl font-bold mb-5">
                 Viatgeu a l'època medieval!
               </p>
-              <p className="text-lg leading-relaxed mb-2">
+              <p className="text-base md:text-lg leading-relaxed mb-2">
                 Hostalric acull una nova edició de la Fira Medieval, un
                 esdeveniment que reviu l'esplendor històric del municipi, que va
                 ser la capital del Vescomtat de Cabrera.
               </p>
-              <p className="text-lg leading-relaxed mb-1">
+              <p className="text-base md:text-lg leading-relaxed mb-1">
                 Durant tres dies, podreu gaudir d'un gran mercat, així com
                 d'espectacles i activitats que us transportaran a l'edat
                 mitjana!
               </p>
+              <Link
+                to="/activitats"
+                className="bg-[#EAD9B0] text-[#461615] font-semibold mt-5 py-3 px-6 rounded-full hover:scale-110 transition-transform inline-block"
+              >
+                Descobriu les activitats
+              </Link>
             </div>
-
-            <Link
-              to="/activitats"
-              className="bg-[#EAD9B0] text-[#461615] font-semibold mt-5 py-3 px-6 rounded-full hover:scale-110 transition-transform"
-            >
-              Descobriu les activitats
-            </Link>
           </div>
 
-          {/* RIGHT */}
-          <div className="flex items-center justify-center gap-6 mt-20 md:mt-0 h-full">
-            <div className="relative w-100 h-100 md:w-200 md:h-150 rounded-3xl overflow-hidden shadow-2xl animate-fade-up">
+          {/* COLUMNA DRETA */}
+          <div className="flex flex-row items-center justify-center gap-4 sm:gap-6 md:mt-0 h-full max-w-full overflow-hidden md:justify-self-start md:ml-12 lg:ml-16">
+            <div className="relative w-full aspect-square md:aspect-auto md:w-200 md:h-150 rounded-3xl overflow-hidden shadow-2xl animate-fade-up max-w-[calc(100%-100px)] sm:max-w-none">
               <img
                 src={hero}
                 alt="foto"
@@ -89,61 +95,76 @@ function Home() {
               />
             </div>
 
-            <div className="flex flex-col items-start gap-6 h-full justify-center ml-8">
+            <div className="flex flex-col items-start gap-4 sm:gap-6 h-full justify-center md:ml-8 shrink-0">
               <div className="fade-right">
-                <p className="text-3xl font-serif font-bold leading-none">
+                <p className="text-2xl sm:text-3xl font-serif font-bold leading-none">
                   100%
                 </p>
-                <p className="text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
                   Medieval
                 </p>
               </div>
-              <div
-                className="w-18 h-px bg-[#EAD9B0]/30"
-                fade-right-delay-1
-              ></div>
+              <div className="w-12 sm:w-18 h-px bg-[#EAD9B0]/30"></div>
               <div className="fade-right-delay-1">
-                <p className="text-3xl font-serif font-bold leading-none">
+                <p className="text-2xl sm:text-3xl font-serif font-bold leading-none">
                   100%
                 </p>
-                <p className="text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
                   Experiència
                 </p>
               </div>
-              <div
-                className="w-18 h-px bg-[#EAD9B0]/30"
-                fade-right-delay-2
-              ></div>
+              <div className="w-12 sm:w-18 h-px bg-[#EAD9B0]/30"></div>
               <div className="fade-right-delay-2">
-                <p className="text-3xl font-serif font-bold leading-none">3</p>
-                <p className="text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
+                <p className="text-2xl sm:text-3xl font-serif font-bold leading-none">
+                  3
+                </p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest text-[#EAD9B0]/70 mt-1">
                   Dies de festa
                 </p>
               </div>
             </div>
           </div>
+
+          <div className="flex flex-col md:hidden text-center items-center justify-center max-w-xl px-2">
+            <p className="text-xl font-bold mb-4">
+              Viatgeu a l'època medieval!
+            </p>
+            <p className="text-base leading-relaxed mb-3">
+              Hostalric acull una nova edició de la Fira Medieval, un
+              esdeveniment que reviu l'esplendor històric del municipi, que va
+              ser la capital del Vescomtat de Cabrera.
+            </p>
+            <p className="text-base leading-relaxed mb-5">
+              Durant tres dies, podreu gaudir d'un gran mercat, així com
+              d'espectacles i activitats que us transportaran a l'edat mitjana!
+            </p>
+            <Link
+              to="/activitats"
+              className="bg-[#EAD9B0] text-[#461615] font-semibold py-3 px-8 rounded-full hover:scale-110 transition-transform inline-block w-fit"
+            >
+              Descobriu les activitats
+            </Link>
+          </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center">
+        <div className="md:flex absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center">
           <span>Scroll</span>
           <span>↓</span>
         </div>
       </section>
 
       {/* MARQUEE */}
-
       <Marquee />
 
-      <section className="py-28 px-6">
+      <section className="py-20 md:py-28 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Titol */}
-          <div className="text-center mb-20">
+          <div className="text-center mb-16">
             <span className="text-xs uppercase tracking-widest text-[#ba5940] font-semibold">
               Per què venir
             </span>
-            <h2 className="text-5xl font-serif font-bold text-[#432918] mt-3">
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#432918] mt-3">
               Descobreix la Fira Medieval
             </h2>
-            <p className="text-lg text-[#6b4a2b] mt-4 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-[#6b4a2b] mt-4 max-w-2xl mx-auto">
               Tres dies d'espectacles, mercat, gastronomia i activitats per a
               tota la família al cor de la vila emmurallada d'Hostalric.
             </p>
@@ -205,9 +226,9 @@ function Home() {
 
       {/* VIDEO */}
       <section>
-        <div className=" max-w-7xl mx-auto text-justify">
+        <div className="max-w-7xl mx-auto text-justify px-4 md:px-0">
           <div className="flex justify-center mt-2 mb-10"></div>
-          <h3 className="text-5xl font-serif font-bold text-center text-[#432918] tracking-wide ">
+          <h3 className="text-4xl md:text-5xl font-serif font-bold text-center text-[#432918] tracking-wide">
             Reviu l'última edició
           </h3>
           <div className="w-20 h-1 bg-[#d7b731] mx-auto mt-6 rounded"></div>
