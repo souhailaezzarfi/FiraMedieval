@@ -7,10 +7,22 @@ import castell from "../assets/cards/Castell-Hostalric.jpg";
 import mercat from "../assets/cards/mercat.jpeg";
 import torre from "../assets/cards/torre-fares.webp";
 import espectacles from "../assets/cards/espectacles.png";
+import programaService from "../services/programaService";
 
 function Home() {
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  const [programaUrl, setProgramaUrl] = useState(null);
+
+  useEffect(() => {
+    programaService
+      .getPdf()
+      .then((res) => {
+        if (res.data.url) setProgramaUrl(res.data.url);
+      })
+      .catch(() => {});
   }, []);
 
   const features = [
@@ -68,15 +80,11 @@ function Home() {
               <p className="text-xl md:text-2xl font-bold mb-5">
                 Viatgeu a l'època medieval!
               </p>
-              <p className="text-base md:text-lg leading-relaxed mb-2">
-                Hostalric acull una nova edició de la Fira Medieval, un
-                esdeveniment que reviu l'esplendor històric del municipi, que va
-                ser la capital del Vescomtat de Cabrera.
-              </p>
               <p className="text-base md:text-lg leading-relaxed mb-1">
-                Durant tres dies, podreu gaudir d'un gran mercat, així com
-                d'espectacles i activitats que us transportaran a l'edat
-                mitjana!
+                Hostalric acull una nova edició de la Fira Medieval, un
+                esdeveniment que reviu l'esplendor històric del municipi. Durant
+                tres dies, gaudireu d'un gran mercat, espectacles i activitats
+                que us transportaran a l'edat mitjana!
               </p>
               <Link
                 to="/activitats"
@@ -84,6 +92,19 @@ function Home() {
               >
                 Descobriu les activitats
               </Link>
+              {programaUrl && (
+                <a
+                  href={programaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 text-[#EAD9B0]/80 hover:text-[#EAD9B0] text-sm font-medium flex items-center gap-1.5 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    &#xe415;
+                  </span>
+                  Descarrega el programa oficial
+                </a>
+              )}
             </div>
           </div>
 
@@ -127,18 +148,13 @@ function Home() {
             </div>
           </div>
 
+          {/* Mobile */}      
           <div className="flex flex-col md:hidden text-center items-center justify-center max-w-xl px-2">
-            <p className="text-xl font-bold mb-4">
+            <p className="text-xl font-bold mb-2 mt-1">
               Viatgeu a l'època medieval!
             </p>
-            <p className="text-base leading-relaxed mb-3">
-              Hostalric acull una nova edició de la Fira Medieval, un
-              esdeveniment que reviu l'esplendor històric del municipi, que va
-              ser la capital del Vescomtat de Cabrera.
-            </p>
-            <p className="text-base leading-relaxed mb-5">
-              Durant tres dies, podreu gaudir d'un gran mercat, així com
-              d'espectacles i activitats que us transportaran a l'edat mitjana!
+            <p className="text-base leading-relaxed mb-1">
+              Tres dies d'espectacles, mercat i activitats al cor d'Hostalric.
             </p>
             <Link
               to="/activitats"
@@ -146,9 +162,22 @@ function Home() {
             >
               Descobriu les activitats
             </Link>
+            {programaUrl && (
+              <a
+                href={programaUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 text-[#EAD9B0]/80 hover:text-[#EAD9B0] text-sm font-medium flex items-center gap-1.5 transition-colors"
+              >
+                <span className="material-symbols-outlined text-base">
+                  &#xe415;
+                </span>
+                Descarrega el programa oficial
+              </a>
+            )}
           </div>
         </div>
-        <div className="md:flex absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex flex-col items-center">
+        <div className="hidden md:flex absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#EAD9B0] text-sm flex-col items-center">
           <span>Scroll</span>
           <span>↓</span>
         </div>
@@ -200,7 +229,7 @@ function Home() {
                   <p className="text-base text-[#6b4a2b] leading-relaxed mb-4">
                     {item.descripcio}
                   </p>
-                   {item.preu && (
+                  {item.preu && (
                     <span className="inline-block bg-[#d7b731]/20 text-[#8a6e00] text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-[#d7b731]/40">
                       {item.preu}
                     </span>

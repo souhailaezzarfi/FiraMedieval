@@ -11,12 +11,15 @@ use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\InscripcioController;
 use Illuminate\Support\Facades\Password;
 use App\Http\Controllers\Api\ContacteController;
+use App\Http\Controllers\Api\ProgramaController;
 
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/aparcament-actiu', [AparcamentController::class, 'actiu']);
 Route::post('/contacte', [ContacteController::class, 'enviar']);
+Route::get('/programa-pdf', [ProgramaController::class, 'getProgramaPdf']);
+
 
 
 // Rutes d'activitats per als visitants
@@ -97,4 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/inscripcions/{id}', [InscripcioController::class, 'show']);
     Route::delete('inscripcions/cancelades/{activitat_id}', [InscripcioController::class, 'destroyCancelades']);
     Route::delete('/inscripcions/{id}', [InscripcioController::class, 'destroy']);
+
+    // Programa 
+    Route::post('/programa-pdf', [ProgramaController::class, 'uploadProgramaPdf']);
 });

@@ -14,6 +14,7 @@ import Usuaris from "./admin/Usuaris";
 import userService from "../services/userService";
 import Aparcaments from "./admin/Aparcaments";
 import Reserves from "./admin/ReservesAutocaravanes";
+import Programa from "./admin/Programa";
 
 
 
@@ -22,6 +23,8 @@ const navItems = [
   { to: "/admin/usuaris", label: "Usuaris" },
   { to: "/admin/aparcaments", label: "Aparcaments" },
   { to: "/admin/ReservesAutocaravanes", label: "ReservesAutocaravanes" },
+  { to: "/admin/programa", label: "Programa" },
+
 
 
 ];
@@ -119,6 +122,8 @@ export default function AdminPanel() {
           <Route path="usuaris" element={<Usuaris />} />
           <Route path="aparcaments" element={<Aparcaments />} />
           <Route path="ReservesAutocaravanes" element={<Reserves />} />
+          <Route path="programa" element={<Programa />} />
+
 
 
         </Routes>
