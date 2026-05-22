@@ -29,6 +29,7 @@ function Home() {
     {
       img: castell,
       titulo: "El Castell d’Hostalric",
+      position: "center center",
       descripcio:
         "Des d'un antic volcà, aquesta fortalesa dels vescomtes de Cabrera va protegir el camí entre Girona i Barcelona durant segles.",
       reservaUrl: "https://www.turismehostalric.cat/ca/",
@@ -36,6 +37,7 @@ function Home() {
     {
       img: torre,
       titulo: "La torre dels frares",
+      position: "center top",
       descripcio:
         "L'emblema medieval d'Hostalric. Amb 33m d'alçada, ofereix tres plantes d'exposició i un mirador únic sobre la roca.",
       preu: "2€ · Gratuït fins als 12 anys",
@@ -184,6 +186,7 @@ function Home() {
                     src={item.img}
                     alt={item.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    style={{ objectPosition: item.position || "center" }}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-[#432918]/60 to-transparent" />
                   <span className="absolute top-4 right-4 text-3xl"></span>
