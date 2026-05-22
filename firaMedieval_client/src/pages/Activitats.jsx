@@ -151,7 +151,7 @@ function Activitats() {
       diaSeleccionat === "Repeteix"
         ? Object.values(
             filtrades.reduce((acc, a) => {
-              if (!acc[a.id]) acc[acc[a.id]] = a;
+              if (!acc[a.id]) acc[a.id] = a;
               return acc;
             }, {}),
           )
@@ -347,7 +347,7 @@ function Activitats() {
                     &#xe878;
                   </span>
                   {dataStr === "Repeteix"
-                    ? "Es repeteix tous els dies de la fira"
+                    ? "Es repeteix tots els dies de la fira"
                     : formatarData(dataStr)}
                 </h2>
 
