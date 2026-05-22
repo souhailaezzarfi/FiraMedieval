@@ -632,11 +632,6 @@ function Profile() {
                 className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-2.5 px-5 rounded-full transition-colors flex justify-center items-center gap-1.5 shadow-sm disabled:opacity-60 cursor-pointer text-xs sm:text-sm"
               >
                 {savingReserva ? "Desant..." : "Desar canvis"}
-                {!savingReserva && (
-                  <span className="material-symbols-outlined text-base">
-                    &#xe161;
-                  </span>
-                )}
               </button>
             </div>
           </div>
