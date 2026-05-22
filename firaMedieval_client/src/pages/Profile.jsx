@@ -279,11 +279,8 @@ function Profile() {
                 <div className="flex items-center gap-4 pt-2">
                   <button
                     type="submit"
-                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
+                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-2 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-lg">
-                      &#xe161;
-                    </span>
                     Desar canvis
                   </button>
                   {saved && (
@@ -381,9 +378,9 @@ function Profile() {
                     ) : (
                       <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-[#432918]/20">
                         <span className="material-symbols-outlined text-3xl text-[#432918]/20 mb-2 flex justify-center">
-                          &#xe56c;
+                          &#xe54f;
                         </span>
-                        <p className="text-xs font-bold text-[#432918]/60">
+                        <p className="text-sm font-bold text-[#432918]/60">
                           No tens cap reserva d'aparcament activa.
                         </p>
                       </div>
@@ -437,7 +434,7 @@ function Profile() {
                               </span>
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-bold text-sm sm:text-base text-[#432918] break-words">
+                              <p className="font-bold text-sm sm:text-base text-[#432918] wrap-break-word">
                                 {ins.activitat?.nom || "Activitat Medieval"}
                               </p>
                               <p className="text-xs sm:text-sm text-[#432918]/80 mt-1 font-medium flex items-center gap-1.5">
@@ -451,9 +448,7 @@ function Profile() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 sm:gap-3 self-end sm:items-center sm:self-center shrink-0">
-                            {estatBadge(
-                              ins.estat === "espera" ? "espera" : "confirmada",
-                            )}
+                            {estatBadge(ins.estat)}
                             <button
                               onClick={() => handleEliminarInscripcio(ins.id)}
                               className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center"

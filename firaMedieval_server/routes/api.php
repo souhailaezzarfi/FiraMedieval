@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\AparcamentController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\InscripcioController;
 use Illuminate\Support\Facades\Password;
-use App\Http\Controllers\Api\ContacteController; 
+use App\Http\Controllers\Api\ContacteController;
 
 // Rutes públiques
 Route::post('/register', [AuthController::class, 'register']);
@@ -95,5 +95,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/inscripcions', [InscripcioController::class, 'index']);
     Route::post('/inscripcions', [InscripcioController::class, 'store']);
     Route::get('/inscripcions/{id}', [InscripcioController::class, 'show']);
+    Route::delete('inscripcions/cancelades/{activitat_id}', [InscripcioController::class, 'destroyCancelades']);
     Route::delete('/inscripcions/{id}', [InscripcioController::class, 'destroy']);
 });

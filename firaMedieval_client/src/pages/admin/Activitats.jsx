@@ -193,15 +193,48 @@ export default function Activitats() {
   };
 
   const handleCancelInscripcio = async (id) => {
-    if (!window.confirm("Segur que vols cancel·lar aquesta inscripció?"))
+    const inscripcio = inscrits.find((i) => i.id === id);
+
+    if (inscripcio?.estat === "cancel·lada") {
+      if (
+        !window.confirm(
+          "Segur que vols eliminar definitivament aquesta inscripció?",
+        )
+      )
+        return;
+      try {
+        await inscripcioService.delete(id);
+        setInscrits((prev) => prev.filter((i) => i.id !== id));
+      } catch (err) {
+        alert(err.response?.data?.message ?? "Error en eliminar.");
+      }
+    } else {
+      if (!window.confirm("Segur que vols cancel·lar aquesta inscripció?"))
+        return;
+      try {
+        await inscripcioService.delete(id);
+        setInscrits((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, estat: "cancel·lada" } : i)),
+        );
+      } catch (err) {
+        alert(err.response?.data?.message ?? "Error en cancel·lar.");
+      }
+    }
+  };
+  const handleDeleteCancelades = async () => {
+    if (
+      !window.confirm(
+        "Segur que vols eliminar totes les inscripcions cancel·lades?",
+      )
+    )
       return;
     try {
-      await inscripcioService.delete(id);
-      setInscrits((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, estat: "cancel·lada" } : i)),
-      );
+      await inscripcioService.deleteCancelades(activitatSeleccionada.id);
+      setInscrits((prev) => prev.filter((i) => i.estat !== "cancel·lada"));
     } catch (err) {
-      alert(err.response?.data?.message ?? "Error en cancel·lar.");
+      alert(
+        err.response?.data?.message ?? "Error en eliminar les cancel·lades.",
+      );
     }
   };
 
@@ -816,6 +849,7 @@ export default function Activitats() {
           inscrits={inscrits}
           loading={loadingInscrits}
           onCancel={handleCancelInscripcio}
+          onDeleteCancelades={handleDeleteCancelades}
           onClose={() => setShowInscrits(false)}
         />
       )}

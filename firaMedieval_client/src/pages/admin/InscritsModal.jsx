@@ -31,12 +31,12 @@ export default function InscritsModal({
   inscrits,
   loading,
   onCancel,
+  onDeleteCancelades,
   onClose,
 }) {
   const [filterEstat, setFilterEstat] = useState("");
   const [filterHorari, setFilterHorari] = useState("");
 
-  // Agrupar inscrits per horari_id per mostrar comptador per franja
   const comptadorPerFranja = inscrits.reduce((acc, i) => {
     if (i.estat === "confirmada") {
       acc[i.horari_id] = (acc[i.horari_id] ?? 0) + 1;
@@ -60,7 +60,7 @@ export default function InscritsModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-[#FBF7F0] rounded-2xl w-[60vw] border border-[#E0D5C0] h-[85vh] flex flex-col shadow-2xl">
+      <div className="bg-[#FBF7F0] rounded-2xl w-[75vw] border border-[#E0D5C0] h-[85vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-8 py-6 border-b border-[#E0D5C0] flex items-start justify-between shrink-0">
           <div>
@@ -141,14 +141,22 @@ export default function InscritsModal({
               Netejar filtres
             </button>
           )}
+          {inscrits.some((i) => i.estat === "cancel·lada") && (
+            <button
+              onClick={onDeleteCancelades}
+              className="text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors font-medium"
+            >
+              Eliminar totes les cancel·lades
+            </button>
+          )}
 
-          <span className="ml-auto text-xs text-[#8B6A4A]">
+          <span className="ml-auto text-md text-[#8B6A4A]">
             {filtered.length} resultat{filtered.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto overflow-x-auto flex-1">
           {loading ? (
             <p className="text-center text-[#8B6A4A] py-16">Carregant...</p>
           ) : inscrits.length === 0 ? (
@@ -222,11 +230,19 @@ export default function InscritsModal({
                           : "—"}
                       </td>
                       <td className="px-5 py-3">
-                        {i.estat !== "cancel·lada" && (
+                        {i.estat !== "cancel·lada" ? (
                           <button
                             onClick={() => onCancel(i.id)}
                             className="text-red-600 hover:bg-red-100 p-1.5 rounded-md transition-colors"
                             title="Cancel·lar inscripció"
+                          >
+                            <MdDelete size={22} />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onCancel(i.id)}
+                            className="text-red-300 hover:bg-red-50 hover:text-red-500 p-1.5 rounded-md transition-colors"
+                            title="Eliminar definitivament"
                           >
                             <MdDelete size={22} />
                           </button>
