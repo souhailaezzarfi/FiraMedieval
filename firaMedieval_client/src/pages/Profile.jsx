@@ -176,7 +176,7 @@ function Profile() {
   const estatBadge = (estat) => {
     if (estat === "confirmada" || [...estat].join("").includes("acceptada"))
       return (
-        <div className="bg-green-100 text-green-800 border border-green-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+        <div className="bg-green-100 text-green-800 border border-green-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11 flex-1 sm:flex-none">
           <span className="material-symbols-outlined text-[18px]">
             &#xe86c;
           </span>
@@ -185,7 +185,7 @@ function Profile() {
       );
     if (estat === "espera")
       return (
-        <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+        <div className="bg-blue-100 text-blue-800 border border-blue-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11 flex-1 sm:flex-none">
           <span className="material-symbols-outlined text-[18px]">
             &#xe192;
           </span>
@@ -193,7 +193,7 @@ function Profile() {
         </div>
       );
     return (
-      <div className="bg-red-100 text-red-800 border border-red-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11">
+      <div className="bg-red-100 text-red-800 border border-red-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 shrink-0 text-sm h-11 flex-1 sm:flex-none">
         <span className="material-symbols-outlined text-[18px]">&#xe5cd;</span>
         Cancel·lada
       </div>
@@ -229,30 +229,31 @@ function Profile() {
           >
             {initials}
           </div>
-          <div className="pb-1 sm:pb-2 text-white">
+          <div className="pb-1 sm:pb-2 text-white min-w-0 flex-1">
             <p className="text-[10px] sm:text-xs uppercase tracking-widest opacity-80 mb-0.5 font-bold">
               Perfil d'usuari
             </p>
-            <h1 className="text-2xl sm:text-4xl font-serif font-bold leading-tight drop-shadow-md">
+            <h1 className="text-xl sm:text-4xl font-serif font-bold leading-tight drop-shadow-md truncate">
               {user?.nom} {user?.cognoms}
             </h1>
-            <p className="text-xs sm:text-sm opacity-90 font-medium break-all">
+            <p className="text-xs sm:text-sm opacity-90 font-medium break-all truncate">
               {user?.email}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 space-y-12">
-        <div className="bg-white/50 rounded-2xl border border-[#432918]/20 p-5 sm:p-10 space-y-12 shadow-xs">
-          <div className="space-y-5">
-            <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
-              <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-12">
+        <div className="bg-white/50 rounded-2xl border border-[#432918]/20 p-4 sm:p-10 space-y-10 sm:space-y-12 shadow-xs">
+          {/* DADES PERFIL */}
+          <div className="space-y-4 sm:space-y-5">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#ba5940] text-2xl sm:text-3xl">
                 &#xe853;
               </span>
               Dades personals
             </h2>
-            <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+            <div className="border border-[#432918]/20 rounded-2xl p-4 sm:p-8 bg-white/50">
               <form onSubmit={handleUpdate} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {[
@@ -271,20 +272,20 @@ function Profile() {
                         onChange={(e) =>
                           setFormData({ ...formData, [key]: e.target.value })
                         }
-                        className="w-full px-4 py-3 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] focus:border-transparent transition-all bg-[#fdfaf3]"
+                        className="w-full px-4 py-2.5 border border-[#432918]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ba5940] focus:border-transparent transition-all bg-[#fdfaf3] text-sm"
                       />
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
                   <button
                     type="submit"
-                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-2 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer"
+                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-bold py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm cursor-pointer text-sm"
                   >
                     Desar canvis
                   </button>
                   {saved && (
-                    <span className="text-xs sm:text-sm text-green-700 font-bold flex items-center gap-1.5 bg-green-100 px-3 py-1.5 rounded-lg border border-green-200">
+                    <span className="text-xs sm:text-sm text-green-700 font-bold flex items-center justify-center gap-1.5 bg-green-100 px-3 py-1.5 rounded-lg border border-green-200">
                       <span className="material-symbols-outlined text-base">
                         &#xe5ca;
                       </span>
@@ -298,14 +299,15 @@ function Profile() {
 
           {user?.role !== "admin" && (
             <>
-              <div className="space-y-5">
-                <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+              {/* RESERVA AUTOCARAVANES */}
+              <div className="space-y-4 sm:space-y-5">
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-2xl sm:text-3xl">
                     &#xe54f;
                   </span>
                   La meva reserva d'aparcament
                 </h2>
-                <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+                <div className="border border-[#432918]/20 rounded-2xl p-4 sm:p-8 bg-white/50">
                   <div className="space-y-4">
                     {loadingReserva ? (
                       <div className="w-full flex justify-center items-center py-4">
@@ -331,8 +333,8 @@ function Profile() {
                         </svg>
                       </div>
                     ) : reserva ? (
-                      <div className="border border-[#432918]/20 p-5 rounded-2xl shadow-sm bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="border border-[#432918]/20 p-4 rounded-2xl shadow-sm bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#ba5940]/10 flex items-center justify-center shrink-0">
                             <span className="material-symbols-outlined text-xl sm:text-2xl text-[#ba5940]">
                               &#xeb3c;
@@ -354,25 +356,27 @@ function Profile() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 sm:gap-3 self-end sm:items-center sm:self-center mt-1 sm:mt-0">
-                          {estatBadge(reserva.estat)}
-                          <button
-                            onClick={openEditReserva}
-                            className="p-2 text-[#432918]/60 bg-[#fdfaf3] border border-[#432918]/20 rounded-xl hover:text-[#ba5940] hover:border-[#ba5940] transition-colors cursor-pointer flex items-center h-11 w-11 justify-center"
-                          >
-                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
-                              &#xe3c9;
-                            </span>
-                          </button>
-                          <button
-                            onClick={handleCancelReserva}
-                            disabled={cancelant}
-                            className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center disabled:opacity-50"
-                          >
-                            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
-                              &#xe872;
-                            </span>
-                          </button>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-gray-100">
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            {estatBadge(reserva.estat)}
+                            <button
+                              onClick={openEditReserva}
+                              className="p-2 text-[#432918]/60 bg-[#fdfaf3] border border-[#432918]/20 rounded-xl hover:text-[#ba5940] hover:border-[#ba5940] transition-colors cursor-pointer flex items-center h-11 w-11 justify-center shrink-0"
+                            >
+                              <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                                &#xe3c9;
+                              </span>
+                            </button>
+                            <button
+                              onClick={handleCancelReserva}
+                              disabled={cancelant}
+                              className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center shrink-0 disabled:opacity-50"
+                            >
+                              <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                                &#xe872;
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -389,14 +393,15 @@ function Profile() {
                 </div>
               </div>
 
-              <div className="space-y-5">
-                <h2 className="text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+              {/* INSCRIPCIONS ACTIVITATS */}
+              <div className="space-y-4 sm:space-y-5">
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#432918] flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-2xl sm:text-3xl">
                     &#xe878;
                   </span>
                   Les meves inscripcions
                 </h2>
-                <div className="border border-[#432918]/20 rounded-2xl p-5 sm:p-8 bg-white/50">
+                <div className="border border-[#432918]/20 rounded-2xl p-4 sm:p-8 bg-white/50">
                   <div className="space-y-4">
                     {loadingInscripcions ? (
                       <div className="w-full flex justify-center items-center py-4">
@@ -425,7 +430,7 @@ function Profile() {
                       inscripcions.map((ins) => (
                         <div
                           key={ins.id}
-                          className="border border-[#432918]/20 p-4 sm:p-5 rounded-2xl shadow-sm bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                          className="border border-[#432918]/20 p-4 rounded-2xl shadow-sm bg-white flex flex-col md:flex-row md:items-center justify-between gap-4"
                         >
                           <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#ba5940]/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -447,11 +452,11 @@ function Profile() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 sm:gap-3 self-end sm:items-center sm:self-center shrink-0">
+                          <div className="flex flex-row items-center justify-between sm:justify-end gap-3 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-gray-100 shrink-0 flex-1 sm:flex-none">
                             {estatBadge(ins.estat)}
                             <button
                               onClick={() => handleEliminarInscripcio(ins.id)}
-                              className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center"
+                              className="p-2 text-red-600/70 bg-red-50 border border-red-200 rounded-xl hover:text-red-700 hover:border-red-300 transition-colors cursor-pointer flex items-center h-11 w-11 justify-center shrink-0"
                             >
                               <span className="material-symbols-outlined text-[18px]">
                                 &#xe872;
@@ -476,9 +481,10 @@ function Profile() {
             </>
           )}
 
+          {/* ELIMINAR COMPTE */}
           {user?.role !== "admin" && (
             <div className="space-y-5">
-              <div className="border border-red-300 rounded-2xl p-6 bg-red-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-2xs">
+              <div className="border border-red-300 rounded-2xl p-4 sm:p-6 bg-red-50 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 shadow-2xs">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-red-200/60 flex items-center justify-center shrink-0 text-red-600/70">
                     <span className="material-symbols-outlined text-xl">
@@ -503,7 +509,7 @@ function Profile() {
                       navigate("/");
                     }
                   }}
-                  className="bg-[#461615] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md cursor-pointer self-start sm:self-center shrink-0 text-sm"
+                  className="bg-[#461615] hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md cursor-pointer w-full lg:w-auto text-center shrink-0 text-sm"
                 >
                   Eliminar compte
                 </button>
@@ -513,6 +519,7 @@ function Profile() {
         </div>
       </div>
 
+      {/* MODAL EDICIÓ RESERVA */}
       {showEditReserva && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-[#f7f2e8] rounded-3xl w-full max-w-lg border border-[#432918]/20 max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -533,7 +540,7 @@ function Profile() {
               </button>
             </div>
 
-            <div className="px-6 sm:px-8 py-5 sm:py-6 space-y-4 bg-white">
+            <div className="px-4 sm:px-8 py-5 sm:py-6 space-y-4 bg-white">
               {editError && (
                 <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mt-2 mb-8 text-[#ba5940] font-bold text-xs sm:text-sm flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">
