@@ -42,6 +42,17 @@ conté la configuració base de Laravel. Les variables estructurals que permeten
 - **`FRONTEND_URL`**: URL de l'aplicació React (`http://localhost:5173`). És necessària per a les polítiques CORS i l'autenticació de Sanctum.
 - **`APP_URL`**: URL base on s'exposa l'API (`http://localhost:8000`).
 
+A més, caldrà que configureu els paràmetres del servidor SMTP per al funcionament correcte de l'enviament de correus electrònics:
+
+- **`MAIL_MAILER`**: el controlador d'enviament (p. ex., `smtp`).
+- **`MAIL_SCHEME`**: protocol de seguretat (p. ex., `smtps`).
+- **`MAIL_HOST`**: adreça del servidor de correu (p. ex., `smtp.gmail.com`).
+- **`MAIL_PORT`**: port de connexió (p. ex., `465` o `587`).
+- **`MAIL_USERNAME`**: el vostre compte de correu electrònic de sortida.
+- **`MAIL_PASSWORD`**: la contrasenya de l'aplicació o del compte de correu.
+- **`MAIL_FROM_ADDRESS`**: adreça de correu electrònic oficial des d'on s'enviaran les notificacions.
+- **`MAIL_FROM_NAME`**: nom del remitent que es mostrarà als usuaris (`Fira Medieval Hostalric`).
+
 ### 3. Aixecar l'entorn
 
 ```bash
@@ -71,6 +82,20 @@ Espereu uns 30 segons a que iniciï la aplicació i accediu a:
 - **Frontend (React):** [http://localhost:5173](http://localhost:5173)
 - **Backend API (Laravel):** [http://localhost:8000](http://localhost:8000)
 - **Base de dades (MySQL):** Accessible des del port 3306 (Usuari: fira_user, Pass: fira_pass).
+
+## Credencials de prova
+
+Una vegada s'hagin executat els seeders, podreu accedir a l'aplicació mitjançant les següents credencials:
+
+### Usuari administrador
+
+- **Email:** `admin@fira.com`
+- **Contrasenya:** `admin1234`
+
+### Usuari normal
+
+- **Email:** `usuari@fira.com`
+- **Contrasenya:** `user1234`
 
 ## Gestió de l'entorn
 
