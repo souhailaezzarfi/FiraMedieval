@@ -148,7 +148,7 @@ function Home() {
             </div>
           </div>
 
-          {/* Mobile */}      
+          {/* Mobile */}
           <div className="flex flex-col md:hidden text-center items-center justify-center max-w-xl px-2">
             <p className="text-xl font-bold mb-2 mt-1">
               Viatgeu a l'època medieval!
@@ -207,7 +207,7 @@ function Home() {
             {features.map((item, i) => (
               <div
                 key={i}
-                className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-3 cursor-pointer"
+                className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-3"
               >
                 {/* Foto */}
                 <div className="h-64 overflow-hidden relative">

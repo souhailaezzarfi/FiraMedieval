@@ -74,7 +74,7 @@ function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="h-10 px-4 rounded-full border border-white flex items-center gap-2 text-white font-medium hover:bg-[#e1d7bc]/25 transition-colors"
+                  className="h-10 px-4 rounded-full border border-white flex items-center gap-2 text-white font-medium hover:bg-[#e1d7bc]/25 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-2xl">
                     &#xe7fd;

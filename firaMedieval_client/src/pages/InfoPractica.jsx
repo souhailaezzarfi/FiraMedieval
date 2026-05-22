@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { FaCar, FaBus, FaTrain } from "react-icons/fa";
@@ -6,6 +6,10 @@ import { FaCaravan } from "react-icons/fa6";
 import aparcamentService from "../services/aparcamentService";
 import reservaService from "../services/reservaAutocaravanaService";
 import { useAuth } from "../context/AuthContext";
+
+// Logos de les línies de Rodalies
+import r2Logo from "../assets/rodalies/R2.jpg";
+import r11Logo from "../assets/rodalies/R11.jpg";
 
 const inscripcioSchema = z.object({
   marca: z.string().min(1, "La marca és obligatòria"),
@@ -104,7 +108,7 @@ function InfoPractica() {
   };
 
   const handleMarcaSelectChange = (e) => {
-    if (e.target.value === "altre") {
+    if (e.target.value === "Altres") {
       setIsAltreMarca(true);
       setFormData((prev) => ({ ...prev, marca: "" }));
       if (errors.marca) setErrors((prev) => ({ ...prev, marca: undefined }));
@@ -210,6 +214,7 @@ function InfoPractica() {
       }
     }
   };
+
   const inputClass = (field) =>
     `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-1 transition-all bg-white disabled:opacity-60 disabled:cursor-not-allowed ${
       errors[field]
@@ -230,7 +235,7 @@ function InfoPractica() {
             <button
               key={tab.id}
               onClick={() => setTabActiva(tab.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-semibold text-sm transition-all ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-semibold text-sm transition-all cursor-pointer ${
                 tabActiva === tab.id
                   ? "bg-[#432918] text-white border-[#432918]"
                   : "bg-white/50 text-[#432918] border-[#432918]/30 hover:border-[#432918]"
@@ -260,10 +265,21 @@ function InfoPractica() {
               </p>
               <ul className="text-base font-bold space-y-3 mb-8 ml-2">
                 <li className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-lg">
+                    &#xe5cc;
+                  </span>
                   Zona esportiva municipal (ZEM)
                 </li>
-                <li className="flex items-center gap-3">Estació de tren</li>
                 <li className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-lg">
+                    &#xe5cc;
+                  </span>
+                  Estació de tren
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#ba5940] text-lg">
+                    &#xe5cc;
+                  </span>
                   Altres zones habilitades
                 </li>
               </ul>
@@ -307,27 +323,34 @@ function InfoPractica() {
                 </a>
               </p>
             </div>
-            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
+
+            {/* CARD R11 AMB IMATGE LOGOTIP */}
+            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={r11Logo}
+                  alt="Logotip R11 Rodalies"
+                  className="w-16 h-16 object-contain rounded-xl shadow-xs shrink-0"
+                />
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-1">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-0.5">
                     Recomanada
                   </p>
-                  <h3 className="text-xl font-serif font-bold mb-2">
-                    R11 · Barcelona Sants ↔ Portbou
+                  <h3 className="text-xl font-serif font-bold mb-1">
+                    Barcelona Sants ↔ Portbou
                   </h3>
-                  <p className="text-base leading-relaxed text-[#432918]/80">
+                  <p className="text-sm leading-relaxed text-[#432918]/80">
                     Línia principal amb parada a Hostalric. És l'opció
                     recomanada per venir en tren a la Fira.
                   </p>
                 </div>
               </div>
-              <div className="mt-4">
+              <div className="shrink-0">
                 <a
                   href="https://rodalies.gencat.cat/web/.content/02_Horaris/horaris/R11.pdf"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm cursor-pointer"
                 >
                   Consultar horaris R11
                   <span className="material-symbols-outlined text-base">
@@ -337,24 +360,34 @@ function InfoPractica() {
               </div>
             </div>
 
-            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-1">
-                Horari limitat
-              </p>
-              <h3 className="text-xl font-serif font-bold mb-2">
-                R2 · Barcelona Sants ↔ Maçanet-Massanes
-              </h3>
-              <p className="text-base leading-relaxed text-[#432918]/80">
-                Aquesta línia passa per Hostalric únicament al matí, a la tarda
-                o a la nit — pràcticament fora de l'horari de la Fira. No és
-                l'opció recomanada.
-              </p>
-              <div className="mt-4">
+            {/* CARD R2 AMB IMATGE LOGOTIP */}
+            <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={r2Logo}
+                  alt="Logotip R2 Rodalies"
+                  className="w-16 h-16 object-contain rounded-xl shadow-xs shrink-0"
+                />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#ba5940] mb-0.5">
+                    Horari limitat
+                  </p>
+                  <h3 className="text-xl font-serif font-bold mb-1">
+                    Barcelona Sants ↔ Maçanet-Massanes
+                  </h3>
+                  <p className="text-sm leading-relaxed text-[#432918]/80">
+                    Aquesta línia passa per Hostalric únicament al matí, a la
+                    tarda o a la nit — pràcticament fora de l'horari de la Fira.
+                    No és l'opció recomanada.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0">
                 <a
                   href="https://rodalies.gencat.cat/web/.content/02_Horaris/horaris/R2.pdf"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm cursor-pointer"
                 >
                   Consultar horaris R2
                   <span className="material-symbols-outlined text-base">
@@ -420,7 +453,7 @@ function InfoPractica() {
                   href={b.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-[#ba5940] text-[#ba5940] hover:text-white font-semibold py-2 px-4 border border-[#ba5940] hover:border-transparent rounded-full transition-colors text-sm cursor-pointer"
                 >
                   Consultar horaris
                   <span className="material-symbols-outlined text-base">
@@ -473,7 +506,7 @@ function InfoPractica() {
                   )}
                   <button
                     onClick={handleObrirModal}
-                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center"
+                    className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center cursor-pointer"
                   >
                     {user
                       ? "Inscriviu-vos a l'aparcament"
@@ -509,7 +542,7 @@ function InfoPractica() {
             <button
               onClick={tancaModal}
               disabled={estatEnviament === "loading"}
-              className="absolute right-4 top-4 sm:right-6 sm:top-6 text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-50"
+              className="absolute right-4 top-4 sm:right-6 sm:top-6 text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-50 cursor-pointer"
             >
               <span className="material-symbols-outlined text-3xl font-bold">
                 &#xe5cd;
@@ -520,7 +553,6 @@ function InfoPractica() {
               Inscripció a l'aparcament d'autocaravanes
             </h2>
 
-            {/* NOU: error general del backend dins el modal */}
             {errors.general && (
               <p className="text-red-500 text-xs mb-4 text-center">
                 {errors.general}
@@ -561,7 +593,7 @@ function InfoPractica() {
                           setFormData((prev) => ({ ...prev, marca: "" }));
                         }}
                         disabled={estatEnviament !== "idle"}
-                        className="absolute right-3 top-0 bottom-0 h-full flex items-center justify-center text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-60"
+                        className="absolute right-3 top-0 bottom-0 h-full flex items-center justify-center text-[#432918]/40 hover:text-[#ba5940] transition-colors disabled:opacity-60 cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-2xl font-bold">
                           &#xe5cd;
@@ -577,18 +609,19 @@ function InfoPractica() {
                         onFocus={netejarError}
                         disabled={estatEnviament !== "idle"}
                         className={
-                          inputClass("marca") + " appearance-none pr-10"
+                          inputClass("marca") +
+                          " appearance-none pr-10 cursor-pointer"
                         }
                       >
                         <option value="" disabled>
                           Selecciona
                         </option>
-                        <option value="fiat">Fiat</option>
-                        <option value="ford">Ford</option>
-                        <option value="iveco">Iveco</option>
-                        <option value="volkswagen">Volkswagen</option>
-                        <option value="mercedes">Mercedes-Benz</option>
-                        <option value="altre">Altres (especificar)</option>
+                        <option value="Fiat">Fiat</option>
+                        <option value="Ford">Ford</option>
+                        <option value="Iveco">Iveco</option>
+                        <option value="Volkswagen">Volkswagen</option>
+                        <option value="Mercedes-Benz">Mercedes-Benz</option>
+                        <option value="Altres">Altres (especificar)</option>
                       </select>
                       <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 text-xl pointer-events-none">
                         &#xe5c5;
@@ -755,11 +788,11 @@ function InfoPractica() {
                       checked={formData.acceptoTermes}
                       onChange={handleChange}
                       disabled={estatEnviament !== "idle"}
-                      className="h-5 w-5 border border-[#432918]/20 rounded bg-white text-[#ba5940] focus:ring-[#ba5940] disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="h-5 w-5 border border-[#432918]/20 rounded bg-white text-[#ba5940] focus:ring-[#ba5940] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                     />
                     <label
                       htmlFor="acceptoTermes"
-                      className={`text-base ${errors.acceptoTermes ? "text-red-500" : "text-[#432918]"}`}
+                      className={`text-base cursor-pointer ${errors.acceptoTermes ? "text-red-500" : "text-[#432918]"}`}
                     >
                       Accepto els termes i condicions{" "}
                       <span className="text-red-500">*</span>
@@ -780,12 +813,12 @@ function InfoPractica() {
                   disabled={estatEnviament !== "idle"}
                   className={`text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 flex items-center gap-2 shadow-md w-full sm:w-auto justify-center ${
                     estatEnviament === "success"
-                      ? "bg-green-600 cursor-default"
+                      ? "bg-green-600"
                       : estatEnviament === "espera"
-                        ? "bg-yellow-500 cursor-default"
+                        ? "bg-yellow-500"
                         : estatEnviament === "loading"
                           ? "bg-[#ba5940]/70 cursor-wait"
-                          : "bg-[#ba5940] hover:bg-[#432918]"
+                          : "bg-[#ba5940] hover:bg-[#432918] cursor-pointer"
                   }`}
                 >
                   {estatEnviament === "idle" && (
