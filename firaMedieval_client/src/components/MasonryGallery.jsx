@@ -1,21 +1,27 @@
 // components/MasonryGallery.jsx
 import { useState } from "react";
-import castell from "../assets/cards/Castell-Hostalric.jpg";
-import mercat from "../assets/cards/mercat.jpeg";
-import torre from "../assets/cards/torre-fares.webp";
-import hero from "../assets/hero.jpg";
+import galeria1 from "../assets/galeria/galeria1.jpg";
+import galeria2 from "../assets/galeria/galeria2.jpg";
+import galeria3 from "../assets/galeria/galeria3.jpg";
+import galeria4 from "../assets/galeria/galeria4.jpg";
+import galeria5 from "../assets/galeria/galeria5.jpg";
+import galeria6 from "../assets/galeria/galeria6.jpg";
+import galeria7 from "../assets/galeria/galeria7.jpg";
+import galeria8 from "../assets/galeria/galeria8.jpg";
+import galeria9 from "../assets/galeria/galeria9.jpg";
+import galeria10 from "../assets/galeria/galeria10.jpg";
 
 const photos = [
-  { img: castell, title: "Castell d'Hostalric", span: "row-span-2" },
-  { img: mercat, title: "Gran Mercat Medieval", span: "" },
-  { img: hero, title: "La Fira", span: "" },
-  { img: torre, title: "Torre dels Frares", span: "row-span-2" },
-  { img: mercat, title: "Artesania", span: "" },
-  { img: castell, title: "Vila Emmurallada", span: "" },
-  { img: hero, title: "Espectacles", span: "" },
-  { img: torre, title: "Exposicions", span: "" },
-  { img: mercat, title: "Gastronomia", span: "" },
-  { img: castell, title: "Productes Locals", span: "" },
+  { img: galeria1, title: "Recreació Medieval", span: "row-span-2" },
+  { img: galeria2, title: "Espectacles al Castell", span: "" },
+  { img: galeria3, title: "Animació Medieval", span: "" },
+  { img: galeria4, title: "Combat Medieval", span: "row-span-2" },
+  { img: galeria5, title: "Artesania Medieval", span: "" },
+  { img: galeria6, title: "Tir amb Arc", span: "" },
+  { img: galeria7, title: "Música Medieval", span: "" },
+  { img: galeria8, title: "Combat d'Espases", span: "" },
+  { img: galeria9, title: "Activitats Infantils", span: "" },
+  { img: galeria10, title: "Exhibició d'Animals", span: "" },
 ];
 
 export default function MasonryGallery() {

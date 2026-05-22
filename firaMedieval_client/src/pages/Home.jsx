@@ -6,20 +6,21 @@ import hero from "../assets/hero.jpg";
 import castell from "../assets/cards/Castell-Hostalric.jpg";
 import mercat from "../assets/cards/mercat.jpeg";
 import torre from "../assets/cards/torre-fares.webp";
+import espectacles from "../assets/cards/espectacles.png";
 
 function Home() {
   const features = [
     {
-      img: hero,
+      img: espectacles,
       titulo: "Espectacles",
       descripcio:
-        "Bruixes, dracs i malabaristes il·luminen la nit amb espectacles únics que et deixaran sense paraules.",
+        "Bruixes, dracs i malabaristes il·luminen els carrers i la nit de la vila amb espectacles únics per a tota la família.",
     },
     {
       img: mercat,
       titulo: "Gran Mercat Medieval",
       descripcio:
-        "Més de 100 parades d'artesania, gastronomia i productes locals en plena vila emmurallada.",
+        "Artesania, gastronomia i productes locals repartits per la Via Romana, la plaça de la Vila i els carrers de la vila emmurallada.",
     },
     {
       img: castell,
@@ -172,14 +173,14 @@ function Home() {
                   <h3 className="text-xl font-bold text-[#432918] mb-3">
                     {item.titulo}
                   </h3>
-                  {item.preu && (
+                  <p className="text-base text-[#6b4a2b] leading-relaxed mb-4">
+                    {item.descripcio}
+                  </p>
+                   {item.preu && (
                     <span className="inline-block bg-[#d7b731]/20 text-[#8a6e00] text-xs font-semibold px-3 py-1 rounded-full mb-3 border border-[#d7b731]/40">
                       {item.preu}
                     </span>
                   )}
-                  <p className="text-base text-[#6b4a2b] leading-relaxed mb-4">
-                    {item.descripcio}
-                  </p>
                   {item.reservaUrl ? (
                     <a
                       href={item.reservaUrl}
