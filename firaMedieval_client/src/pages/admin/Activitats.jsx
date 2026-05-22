@@ -213,9 +213,10 @@ export default function Activitats() {
         return;
       try {
         await inscripcioService.delete(id);
-        setInscrits((prev) =>
-          prev.map((i) => (i.id === id ? { ...i, estat: "cancel·lada" } : i)),
-        );
+        const res = await inscripcioService.getAll({
+          activitat_id: activitatSeleccionada.id,
+        });
+        setInscrits(res.data?.data ?? res.data ?? []);
       } catch (err) {
         alert(err.response?.data?.message ?? "Error en cancel·lar.");
       }
