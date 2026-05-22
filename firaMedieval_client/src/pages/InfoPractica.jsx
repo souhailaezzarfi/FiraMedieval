@@ -37,7 +37,6 @@ function InfoPractica() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  // NOU: estat de l'aparcament actiu
   const [aparcamentActiu, setAparcamentActiu] = useState(null);
   const [loadingAparcament, setLoadingAparcament] = useState(false);
 
@@ -64,7 +63,6 @@ function InfoPractica() {
     };
   }, [isModalOpen]);
 
-  // consultar aparcament actiu quan s'entra al tab
   useEffect(() => {
     if (tabActiva !== "autocaravana") return;
     setLoadingAparcament(true);
@@ -158,7 +156,6 @@ function InfoPractica() {
         data_sortida: formData.dataSortida,
       });
 
-      //  diferenciar confirmada vs espera
       const nouEstat = res.data.estat === "espera" ? "espera" : "success";
       setEstatEnviament(nouEstat);
 
@@ -296,21 +293,20 @@ function InfoPractica() {
               Tren
             </h2>
 
-            <div className="bg-[#432918]/5 border border-[#432918]/15 rounded-2xl p-5">
-              <p className="text-sm text-[#432918]/70 italic">
+            <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mb-8">
+              <p className="text-base font-bold text-[#ba5940]">
                 Horaris subjectes a modificacions. Consulteu la web o app de
-                Rodalies.
+                Rodalies.{" "}
                 <a
                   href="https://www.renfe.com/es"
                   target="_blank"
                   rel="noreferrer"
-                  className="underline font-bold ml-2 hover:text-[#ba5940]  transition-colors"
+                  className="underline hover:opacity-70 transition-opacity"
                 >
                   www.renfe.com
                 </a>
               </p>
             </div>
-
             <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
@@ -380,18 +376,17 @@ function InfoPractica() {
               Bus
             </h2>
 
-            <div className="bg-[#432918]/5 border border-[#432918]/15 rounded-2xl p-5">
-              <p className="text-sm text-[#432918]/70 italic">
+            <div className="bg-[#ba5940]/10 border-l-4 border-[#ba5940] p-4 rounded-r-lg mb-8">
+              <p className="text-base font-bold text-[#ba5940]">
                 Horaris subjectes a modificacions. Consulteu{" "}
                 <a
                   href="https://www.teisa-bus.com/ca/rutes"
                   target="_blank"
                   rel="noreferrer"
-                  className="underline hover:text-[#ba5940] ml-2 transition-colors font-bold"
+                  className="underline hover:opacity-70 transition-opacity"
                 >
                   teisa-bus.com
                 </a>
-                .
               </p>
             </div>
 
