@@ -16,17 +16,12 @@ import Aparcaments from "./admin/Aparcaments";
 import Reserves from "./admin/ReservesAutocaravanes";
 import Programa from "./admin/Programa";
 
-
-
 const navItems = [
   { to: "/admin/activitats", label: "Activitats" },
   { to: "/admin/usuaris", label: "Usuaris" },
   { to: "/admin/aparcaments", label: "Aparcaments" },
-  { to: "/admin/ReservesAutocaravanes", label: "ReservesAutocaravanes" },
+  { to: "/admin/ReservesAutocaravanes", label: "Reserves Autocaravanes" },
   { to: "/admin/programa", label: "Programa" },
-
-
-
 ];
 
 export default function AdminPanel() {
@@ -64,7 +59,7 @@ export default function AdminPanel() {
             Fira Medieval
           </div>
           <div className="text-[#D4A853]/50 text-lg mt-1">
-            Panell d'administració
+            Tauler d'administració
           </div>
         </div>
 
@@ -86,16 +81,19 @@ export default function AdminPanel() {
         </nav>
 
         <div className="px-5 py-4 border-t border-[#D4A853]/20 flex items-center gap-3">
-          <Link
-            to="/perfil"
+          <button
+            onClick={() => (window.location.href = "/perfil")}
             className="w-9 h-9 rounded-full bg-[#D4A853] flex items-center justify-center text-[#1E0F07] font-bold text-lg hover:opacity-90 transition-opacity"
           >
             A
-          </Link>
+          </button>
           <div>
-            <Link to="/perfil" className="text-lg font-bold text-[#D4A853]">
+            <button
+              onClick={() => (window.location.href = "/perfil")}
+              className="text-lg font-bold text-[#D4A853] hover:opacity-80"
+            >
               {user.nom}
-            </Link>
+            </button>
           </div>
         </div>
         <button
@@ -123,9 +121,6 @@ export default function AdminPanel() {
           <Route path="aparcaments" element={<Aparcaments />} />
           <Route path="ReservesAutocaravanes" element={<Reserves />} />
           <Route path="programa" element={<Programa />} />
-
-
-
         </Routes>
       </main>
     </div>

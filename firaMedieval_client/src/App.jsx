@@ -56,6 +56,28 @@ function AdminRoute({ children }) {
   return children;
 }
 
+function ProfileWrapper() {
+  const { user } = useAuth();
+
+  if (user?.role === "admin") {
+    return (
+      <div className="min-h-screen bg-[#f7f2e8]">
+        <Profile />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#e1d7bc]">
+      <Navbar />
+      <main className="grow pt-17">
+        <Profile />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter
@@ -78,8 +100,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/perfil" element={<Profile />} />
         </Route>
+
+        <Route path="/perfil" element={<ProfileWrapper />} />
 
         {/* solo admin puede entrar */}
         <Route

@@ -244,6 +244,15 @@ function Profile() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-12">
+        {user?.role === "admin" && (
+          <button
+            onClick={() => (window.location.href = "/admin")}
+            className="flex items-center gap-2 text-[#432918]/70 hover:text-[#ba5940] transition-colors font-bold bg-white/50 border border-[#432918]/10 py-2 px-5 rounded-full shadow-sm mb-6"
+          >
+            <span className="material-symbols-outlined">&#xe5c4;</span>
+            Tornar al tauler
+          </button>
+        )}
         <div className="bg-white/50 rounded-2xl border border-[#432918]/20 p-4 sm:p-10 space-y-10 sm:space-y-12 shadow-xs">
           {/* DADES PERFIL */}
           <div className="space-y-4 sm:space-y-5">
