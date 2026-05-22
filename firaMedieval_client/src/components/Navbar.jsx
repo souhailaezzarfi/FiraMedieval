@@ -84,20 +84,14 @@ function Navbar() {
 
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
-                    {user.role === "admin" && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="block px-4 py-2 text-[#432918] hover:bg-gray-100"
-                      >
-                        Panel d'administració
-                      </Link>
-                    )}
                     <Link
                       to="/perfil"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="block px-4 py-2 text-[#432918] hover:bg-gray-100"
+                      className="flex items-center gap-2 px-4 py-2 text-[#432918] hover:bg-gray-100"
                     >
+                      <span className="material-symbols-outlined text-lg">
+                        &#xe853;
+                      </span>
                       Perfil
                     </Link>
                     <button
@@ -106,8 +100,11 @@ function Navbar() {
                         setIsDropdownOpen(false);
                         navigate("/");
                       }}
-                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
                     >
+                      <span className="material-symbols-outlined text-lg">
+                        &#xe9ba;
+                      </span>
                       Tancar sessió
                     </button>
                   </div>
