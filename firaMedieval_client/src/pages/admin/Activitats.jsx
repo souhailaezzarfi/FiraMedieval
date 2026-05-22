@@ -4,6 +4,9 @@ import categoriaService from "../../services/categoriaService";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { Link } from "react-router-dom";
+import inscripcioService from "../../services/inscripcioService";
+import { FaUsers } from "react-icons/fa";
+import InscritsModal from "./InscritsModal";
 
 const PER_PAGE = 10;
 
@@ -57,6 +60,10 @@ export default function Activitats() {
   const [novaCategoria, setNovaCategoria] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [repeteixDies, setRepeteixDies] = useState(false);
+  const [showInscrits, setShowInscrits] = useState(false);
+  const [activitatSeleccionada, setActivitatSeleccionada] = useState(null);
+  const [inscrits, setInscrits] = useState([]);
+  const [loadingInscrits, setLoadingInscrits] = useState(false);
 
   const load = async () => {
     try {
@@ -166,6 +173,35 @@ export default function Activitats() {
       setActivitats((prev) => prev.filter((a) => a.id !== id));
     } catch {
       alert("Error en eliminar l'activitat.");
+    }
+  };
+
+  const openInscrits = async (activitat) => {
+    setActivitatSeleccionada(activitat);
+    setShowInscrits(true);
+    setLoadingInscrits(true);
+    try {
+      const res = await inscripcioService.getAll({
+        activitat_id: activitat.id,
+      });
+      setInscrits(res.data?.data ?? res.data ?? []);
+    } catch {
+      setInscrits([]);
+    } finally {
+      setLoadingInscrits(false);
+    }
+  };
+
+  const handleCancelInscripcio = async (id) => {
+    if (!window.confirm("Segur que vols cancel·lar aquesta inscripció?"))
+      return;
+    try {
+      await inscripcioService.delete(id);
+      setInscrits((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, estat: "cancel·lada" } : i)),
+      );
+    } catch (err) {
+      alert(err.response?.data?.message ?? "Error en cancel·lar.");
     }
   };
 
@@ -421,6 +457,13 @@ export default function Activitats() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => openInscrits(a)}
+                        className="p-2 rounded-full text-[#6B4F30] hover:bg-[#EDE3CF] transition-all cursor-pointer"
+                        title="Veure inscrits"
+                      >
+                        <FaUsers size={22} />
+                      </button>
                       <button
                         onClick={() => openEdit(a)}
                         className="p-2 rounded-full text-[#6B4F30] hover:bg-[#EDE3CF] hover:text-[#432918] transition-all cursor-pointer"
@@ -764,6 +807,17 @@ export default function Activitats() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal inscrits  */}
+      {showInscrits && activitatSeleccionada && (
+        <InscritsModal
+          activitat={activitatSeleccionada}
+          inscrits={inscrits}
+          loading={loadingInscrits}
+          onCancel={handleCancelInscripcio}
+          onClose={() => setShowInscrits(false)}
+        />
       )}
     </div>
   );

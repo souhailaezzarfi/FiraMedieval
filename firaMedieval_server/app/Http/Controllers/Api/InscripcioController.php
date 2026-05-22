@@ -49,8 +49,9 @@ class InscripcioController extends Controller
 
         // Comprobar si ya está inscrito
         $jaInscrit = Inscripcio::where('activitat_id', $request->activitat_id)
-            ->where('horari_id', $request->horari_id) // NOU
+            ->where('horari_id', $request->horari_id) 
             ->where('user_id', Auth::id())
+            ->whereIn('estat', ['confirmada', 'espera']) 
             ->exists();
 
         if ($jaInscrit) {

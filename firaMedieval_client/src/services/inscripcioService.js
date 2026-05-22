@@ -1,6 +1,6 @@
 import api from "./api";
 const inscripcioService = {
-  getAll: () => api.get("/inscripcions"),
+  getAll: (params = {}) => api.get("/inscripcions", { params }),
   create: (data) => api.post("/inscripcions", data),
   delete: (id) => api.delete(`/inscripcions/${id}`),
 };

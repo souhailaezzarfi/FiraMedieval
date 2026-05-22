@@ -45,7 +45,6 @@ function ActivitatDetall() {
   const [estatEnviament, setEstatEnviament] = useState("idle");
   const [selectedHorariId, setSelectedHorariId] = useState("");
 
-  // Comprovar si l'usuari ha iniciat sessió
   const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
@@ -62,7 +61,6 @@ function ActivitatDetall() {
           setSelectedHorariId(dataActivitat.horaris[0].id);
         }
 
-        // Obtenir les inscripcions de l'usuari en aquesta activitat
         if (isLoggedIn) {
           try {
             const inscripcionsRes = await api.get(
@@ -72,7 +70,6 @@ function ActivitatDetall() {
 
             if (llistaInscripcions && llistaInscripcions.length > 0) {
               if (dataActivitat.horaris && dataActivitat.horaris.length > 0) {
-                // Buscar a quins horaris s'ha inscrit i ho afegir-ho
                 dataActivitat.horaris = dataActivitat.horaris.map((h) => {
                   const ins = llistaInscripcions.find(
                     (i) => i.horari_id == h.id,
@@ -81,7 +78,12 @@ function ActivitatDetall() {
                     return {
                       ...h,
                       inscripcio_usuari: {
-                        estat: ins.estat === "espera" ? "espera" : "acceptada",
+                        estat:
+                          ins.estat === "espera"
+                            ? "espera"
+                            : ins.estat === "cancel·lada"
+                              ? "cancel·lada"
+                              : "acceptada",
                       },
                     };
                   }
@@ -90,7 +92,12 @@ function ActivitatDetall() {
               } else {
                 const estatReal = llistaInscripcions[0].estat;
                 dataActivitat.inscripcio_usuari = {
-                  estat: estatReal === "espera" ? "espera" : "acceptada",
+                  estat:
+                    estatReal === "espera"
+                      ? "espera"
+                      : estatReal === "cancel·lada"
+                        ? "cancel·lada"
+                        : "acceptada",
                 };
               }
             }
@@ -141,7 +148,6 @@ function ActivitatDetall() {
         response.data.inscripcio?.estat || response.data.estat || "confirmada";
       const nouEstatUI = estatReal === "espera" ? "espera" : "acceptada";
 
-      // Afegir estat de l'inscripció a l'horari seleccionat
       setActivitat((prev) => {
         const updatedHoraris = prev.horaris?.map((h) =>
           h.id == selectedHorariId
@@ -181,7 +187,6 @@ function ActivitatDetall() {
     }
   };
 
-  // Llegir l'estat d'inscripció de la franja horària seleccionada
   let inscripcioActual = null;
   if (activitat) {
     if (activitat.horaris && activitat.horaris.length > 0) {
@@ -194,7 +199,6 @@ function ActivitatDetall() {
     }
   }
 
-  // Lògica per agrupar els horaris pel dia
   const horarisAgrupats = {};
   if (activitat?.horaris) {
     activitat.horaris.forEach((horari) => {
@@ -377,52 +381,65 @@ function ActivitatDetall() {
                     </div>
                   )}
 
-                  {isLoggedIn && !inscripcioActual && (
-                    <button
-                      onClick={handleInscripcio}
-                      disabled={estatEnviament !== "idle"}
-                      className={`w-full text-white font-bold py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm ${
-                        estatEnviament === "loading"
-                          ? "bg-[#ba5940]/70 cursor-wait"
-                          : "bg-[#ba5940] hover:bg-[#432918] cursor-pointer"
-                      }`}
-                    >
-                      {estatEnviament === "idle" && (
-                        <>
-                          <span className="material-symbols-outlined">
-                            &#xe7fe;
-                          </span>
-                          Inscriu-te
-                        </>
-                      )}
-
-                      {estatEnviament === "loading" && (
-                        <>
-                          Processant...
-                          <svg
-                            className="animate-spin h-5 w-5 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        </>
-                      )}
-                    </button>
+                  {isLoggedIn && inscripcioActual?.estat === "cancel·lada" && (
+                    <div className="bg-red-50 text-red-800 border border-red-200 font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-3 w-full">
+                      <span className="material-symbols-outlined">
+                        &#xe5c9;
+                      </span>
+                      Inscripció cancel·lada
+                    </div>
                   )}
+
+                  {isLoggedIn &&
+                    (!inscripcioActual ||
+                      inscripcioActual?.estat === "cancel·lada") && (
+                      <button
+                        onClick={handleInscripcio}
+                        disabled={estatEnviament !== "idle"}
+                        className={`w-full text-white font-bold py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-sm mt-2 ${
+                          estatEnviament === "loading"
+                            ? "bg-[#ba5940]/70 cursor-wait"
+                            : "bg-[#ba5940] hover:bg-[#432918] cursor-pointer"
+                        }`}
+                      >
+                        {estatEnviament === "idle" && (
+                          <>
+                            <span className="material-symbols-outlined">
+                              &#xe7fe;
+                            </span>
+                            {inscripcioActual?.estat === "cancel·lada"
+                              ? "Torna a inscriure't"
+                              : "Inscriu-te"}
+                          </>
+                        )}
+
+                        {estatEnviament === "loading" && (
+                          <>
+                            Processant...
+                            <svg
+                              className="animate-spin h-5 w-5 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
