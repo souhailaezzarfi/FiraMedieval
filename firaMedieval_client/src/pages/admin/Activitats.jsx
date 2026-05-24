@@ -3,6 +3,7 @@ import activitatService from "../../services/activitatService";
 import categoriaService from "../../services/categoriaService";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
+import { CiImageOff } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import inscripcioService from "../../services/inscripcioService";
 import { FaUsers } from "react-icons/fa";
@@ -325,7 +326,6 @@ export default function Activitats() {
         ].forEach((key) => {
           if (laravelErrors[key]) mapped[key] = laravelErrors[key][0];
         });
-        // Horaris (poden venir com horaris.0.hora_inici, etc.)
         const horariError = Object.keys(laravelErrors).find((k) =>
           k.startsWith("horaris"),
         );
@@ -418,7 +418,7 @@ export default function Activitats() {
                       />
                     ) : (
                       <div className="w-14 h-10 bg-[#EDE3CF] rounded-md flex items-center justify-center text-lg">
-                        ?
+                        <CiImageOff />
                       </div>
                     )}
                   </td>

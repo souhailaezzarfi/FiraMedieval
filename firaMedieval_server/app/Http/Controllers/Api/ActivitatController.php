@@ -15,9 +15,19 @@ class ActivitatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $activitats = Activitat::with(['horaris', 'categories'])->get();
+        $query = Activitat::with(['horaris', 'categories']);
+
+        if ($request->filled('ubicacio')) {
+            $query->where('ubicacio', $request->ubicacio);
+        }
+
+        if ($request->filled('exclude_id')) {
+            $query->where('id', '!=', $request->exclude_id);
+        }
+
+        $activitats = $query->get();
 
         foreach ($activitats as $activitat) {
             if ($activitat->imatge) {

@@ -44,6 +44,7 @@ function ActivitatDetall() {
   const [error, setError] = useState(null);
   const [estatEnviament, setEstatEnviament] = useState("idle");
   const [selectedHorariId, setSelectedHorariId] = useState("");
+  const [activitatsSimilars, setActivitatsSimilars] = useState([]);
 
   const isLoggedIn = !!localStorage.getItem("token");
 
@@ -56,7 +57,6 @@ function ActivitatDetall() {
         const response = await api.get(`/activitats/${id}`);
         let dataActivitat = response.data;
 
-        // Seleccionar el primer horari per defecte quan carreguen les dades
         if (dataActivitat?.horaris?.length > 0) {
           setSelectedHorariId(dataActivitat.horaris[0].id);
         }
@@ -123,6 +123,22 @@ function ActivitatDetall() {
       fetchActivitat();
     }
   }, [id, isLoggedIn]);
+
+  useEffect(() => {
+    if (!activitat?.ubicacio) return;
+    api
+      .get("/activitats", {
+        params: {
+          ubicacio: activitat.ubicacio,
+          exclude_id: activitat.id,
+        },
+      })
+      .then((res) => {
+        const totes = res.data?.data ?? res.data ?? [];
+        setActivitatsSimilars(totes.slice(0, 3));
+      })
+      .catch(() => {});
+  }, [activitat]);
 
   const handleInscripcio = async () => {
     if (!isLoggedIn) return;
@@ -537,6 +553,58 @@ function ActivitatDetall() {
           </div>
         </div>
       </div>
+      {activitatsSimilars.length > 0 && (
+        <div className="mt-16">
+          <h3 className="text-2xl font-serif font-bold text-[#432918] mb-6">
+            Més activitats a {activitat.ubicacio}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {activitatsSimilars.map((a) => (
+              <div
+                key={a.id}
+                onClick={() => navigate(`/activitats/${a.id}`)}
+                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#432918]/10 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer"
+              >
+                <div className="h-40 overflow-hidden bg-[#ba5940]/10">
+                  {a.imatge ? (
+                    <img
+                      src={a.imatge}
+                      alt={a.nom}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="material-symbols-outlined text-4xl text-[#ba5940]/30">
+                        &#xe3f4;
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(a.categories ?? []).map((c) => (
+                      <span
+                        key={c.id}
+                        className="text-xs font-bold text-[#ba5940] uppercase tracking-wider"
+                      >
+                        {c.nom}
+                      </span>
+                    ))}
+                  </div>
+                  <h4 className="font-sans font-bold text-[#432918] text-lg leading-tight">
+                    {a.nom}
+                  </h4>
+                  {a.organitzador && (
+                    <p className="text-sm text-[#432918]/60 mt-1">
+                      {a.organitzador}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
