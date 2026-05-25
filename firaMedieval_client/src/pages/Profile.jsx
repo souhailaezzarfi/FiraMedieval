@@ -477,9 +477,9 @@ function Profile() {
                     ) : (
                       <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-[#432918]/20">
                         <span className="material-symbols-outlined text-3xl text-[#432918]/20 mb-2">
-                          &#xe876;
+                           &#xe878;
                         </span>
-                        <p className="text-xs font-bold text-[#432918]/60">
+                        <p className="text-sm font-bold text-[#432918]/60">
                           No tens cap inscripció a activitats realitzada.
                         </p>
                       </div>
