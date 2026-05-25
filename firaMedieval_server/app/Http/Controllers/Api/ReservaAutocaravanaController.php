@@ -50,7 +50,7 @@ class ReservaAutocaravanaController extends Controller
             'procedencia' => 'required|string',
             'total_persones' => 'required|integer|min:1',
             'data_arribada' => 'required|date|after_or_equal:today',
-            'data_sortida' => 'required|date|after:data_arribada',
+            'data_sortida' => 'required|date|after_or_equal:data_arribada',
         ], [
             'matricula.required' => 'La matrícula és obligatòria.',
             'data_arribada.after_or_equal' => 'La data d\'arribada ha de ser igual o posterior a la data actual.',
@@ -64,6 +64,12 @@ class ReservaAutocaravanaController extends Controller
 
         // Comprovar si hi ha places disponibles a l'aparcament
         $aparcament = Aparcament::findOrFail($request->aparcament_id);
+
+        if ($request->data_arribada < $aparcament->data_inici || $request->data_sortida > $aparcament->data_final) {
+            return response()->json([
+                'message' => 'Les dates han d\'estar dins del període de l\'aparcament.'
+            ], 422);
+        }
 
         $ocupades = ReservaAutocaravana::where('aparcament_id', $request->aparcament_id)
             ->where('estat', 'confirmada')
@@ -134,7 +140,7 @@ class ReservaAutocaravanaController extends Controller
             'procedencia'   => 'sometimes|string',
             'total_persones' => 'sometimes|integer|min:1',
             'data_arribada' => 'sometimes|date',
-            'data_sortida'  => 'sometimes|date|after:data_arribada',
+            'data_sortida'  => 'sometimes|date|after_or_equal:data_arribada',
         ]);
 
         $reserva->update($request->only([
@@ -163,17 +169,18 @@ class ReservaAutocaravanaController extends Controller
             return response()->json(['message' => 'No autoritzat'], 403);
         }
 
-        // Evitar processar reserves que ja han estat cancel·lades
-        if ($reserva->estat == 'cancel·lada') {
-            return response()->json(['message' => 'Aquesta reserva ja estava cancel·lada.'], 422);
+        // Si ja està cancel·lada, eliminar del tot
+        if ($reserva->estat === 'cancel·lada') {
+            if ($user->role !== 'admin') {
+                return response()->json(['message' => 'No autoritzat'], 403);
+            }
+            $reserva->delete();
+            return response()->json(['message' => 'Reserva eliminada']);
         }
 
         $estatPrevi = $reserva->estat;
-
-        // Actualitzem l'estat de la reserva a cancel·lada
         $reserva->update(['estat' => 'cancel·lada']);
 
-        // Si la reserva anul·lada estava prèviament confirmada, actualitzem la llista d'espera
         if ($estatPrevi == 'confirmada') {
             $this->actualitzarLlistaEspera($reserva->aparcament_id);
         }
@@ -181,6 +188,19 @@ class ReservaAutocaravanaController extends Controller
         return response()->json(['message' => 'Reserva cancel·lada correctament'], 200);
     }
 
+    /**
+     * Eliminar totes les reserves cancel·lades
+     */
+
+    public function destroyCancelades()
+    {
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'No autoritzat'], 403);
+        }
+
+        $count = ReservaAutocaravana::where('estat', 'cancel·lada')->delete();
+        return response()->json(['message' => "$count reserves eliminades"]);
+    }
     /**
      * Funció per actualitzar la llista d'espera
      */

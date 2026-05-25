@@ -136,7 +136,22 @@ function InfoPractica() {
 
     if (formData.dataArribada && formData.dataSortida) {
       if (new Date(formData.dataSortida) < new Date(formData.dataArribada)) {
-        nousErrors.dataSortida = "Error de dates";
+        nousErrors.dataSortida =
+          "La data de sortida no pot ser anterior a la d'arribada.";
+      }
+      if (
+        new Date(formData.dataArribada) <
+        new Date(aparcamentActiu.aparcament.data_inici)
+      ) {
+        nousErrors.dataArribada =
+          "La data d'arribada no pot ser anterior a l'obertura de l'aparcament.";
+      }
+      if (
+        new Date(formData.dataSortida) >
+        new Date(aparcamentActiu.aparcament.data_final)
+      ) {
+        nousErrors.dataSortida =
+          "La data de sortida no pot ser posterior al tancament de l'aparcament.";
       }
     }
 
@@ -469,8 +484,8 @@ function InfoPractica() {
         {tabActiva === "autocaravana" && (
           <div className="space-y-6 text-justify">
             <div>
-              <h2 className="text-3xl font-serif font-bold mb-5 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#ba5940] text-3xl">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold mb-5 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#ba5940] text-2xl sm:text-3xl">
                   <FaCaravan />
                 </span>
                 Aparcament per autocaravanes
@@ -492,9 +507,15 @@ function InfoPractica() {
                   Comprovant disponibilitat...
                 </p>
               ) : !aparcamentActiu?.obert ? (
-                <div className="border border-[#432918]/20 p-6 rounded-2xl bg-white/50 text-center">
-                  <p className="text-xl font-serif font-bold text-[#432918]/50">
+                <div className="bg-[#432918]/7 border border-[#432918]/20 p-6 rounded-2xl text-center">
+                  <span className="material-symbols-outlined text-4xl text-[#432918]/30 mb-3 block">
+                    &#xe88e;
+                  </span>
+                  <p className="text-xl font-serif font-bold text-[#432918]/70">
                     Les reserves estan tancades en aquest moment.
+                  </p>
+                  <p className="text-sm text-[#432918]/50 mt-2">
+                    Torna a consultar aquesta pàgina més endavant.
                   </p>
                 </div>
               ) : (
@@ -504,6 +525,41 @@ function InfoPractica() {
                       {errors.general}
                     </p>
                   )}
+                  <div className="bg-white/50 border border-[#432918]/20 rounded-2xl p-2 mb-6">
+                    <p className="text-sm font-bold text-[#432918]/60 uppercase tracking-wider mb-3">
+                      Període disponible
+                    </p>
+                    <div className="flex gap-6">
+                      <div>
+                        <p className="text-xs text-[#432918]/50 uppercase tracking-wider">
+                          Arribada
+                        </p>
+                        <p className="font-bold text-[#432918] text-base">
+                          {new Date(
+                            aparcamentActiu.aparcament.data_inici,
+                          ).toLocaleDateString("ca-ES", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#432918]/50 uppercase tracking-wider">
+                          Sortida
+                        </p>
+                        <p className="font-bold text-[#432918] text-base">
+                          {new Date(
+                            aparcamentActiu.aparcament.data_final,
+                          ).toLocaleDateString("ca-ES", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <button
                     onClick={handleObrirModal}
                     className="bg-[#ba5940] hover:bg-[#432918] text-white font-semibold py-3 px-8 rounded-full transition-colors flex items-center gap-2 shadow-md w-full sm:w-auto justify-center cursor-pointer"
@@ -616,11 +672,21 @@ function InfoPractica() {
                         <option value="" disabled>
                           Selecciona
                         </option>
+                        <option value="Adria">Adria</option>
+                        <option value="Benimar">Benimar</option>
+                        <option value="Bürstner">Bürstner</option>
+                        <option value="Carado">Carado</option>
+                        <option value="Chausson">Chausson</option>
+                        <option value="Dethleffs">Dethleffs</option>
                         <option value="Fiat">Fiat</option>
                         <option value="Ford">Ford</option>
+                        <option value="Hymer">Hymer</option>
                         <option value="Iveco">Iveco</option>
-                        <option value="Volkswagen">Volkswagen</option>
                         <option value="Mercedes-Benz">Mercedes-Benz</option>
+                        <option value="Pilote">Pilote</option>
+                        <option value="Rapido">Rapido</option>
+                        <option value="Roller Team">Roller Team</option>
+                        <option value="Volkswagen">Volkswagen</option>
                         <option value="Altres">Altres (especificar)</option>
                       </select>
                       <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#432918]/50 text-xl pointer-events-none">

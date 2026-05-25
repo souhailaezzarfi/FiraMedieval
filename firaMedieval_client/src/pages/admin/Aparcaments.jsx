@@ -3,13 +3,12 @@ import aparcamentService from "../../services/aparcamentService";
 import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 
-
 export default function Aparcaments() {
   const [aparcaments, setAparcaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null); 
+  const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
 
@@ -107,6 +106,7 @@ export default function Aparcaments() {
     const avui = new Date();
     const inici = new Date(a.data_inici);
     const final = new Date(a.data_final);
+    final.setHours(23, 59, 59);
     if (avui < inici)
       return (
         <span className="px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700">

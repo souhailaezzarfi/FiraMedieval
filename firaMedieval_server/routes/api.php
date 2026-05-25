@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reserves', [ReservaAutocaravanaController::class, 'store']);
     Route::get('/reserves/{id}', [ReservaAutocaravanaController::class, 'show']);
     Route::put('/reserves/{id}', [ReservaAutocaravanaController::class, 'update']);
+    Route::delete('/reserves/cancelades', [ReservaAutocaravanaController::class, 'destroyCancelades']);
     Route::delete('/reserves/{id}', [ReservaAutocaravanaController::class, 'cancel']);
 
     // Activitats

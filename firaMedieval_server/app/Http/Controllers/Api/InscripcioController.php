@@ -111,10 +111,6 @@ class InscripcioController extends Controller
             return response()->json(['message' => 'Inscripció eliminada']);
         }
 
-        if ($inscripcio->estat === 'cancel·lada') {
-            return response()->json(['message' => 'Ja està cancel·lada'], 422);
-        }
-
         $estatPrevi = $inscripcio->estat;
         $inscripcio->update(['estat' => 'cancel·lada']);
 

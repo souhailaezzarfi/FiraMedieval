@@ -84,6 +84,7 @@ class UserController extends Controller
         ]);
 
         $data['password'] = Hash::make($request->password);
+        // Desde el panel d'admin, els nous usuaris creats sempre són administradors
         $data['role'] = 'admin';
 
         $user = User::create($data);

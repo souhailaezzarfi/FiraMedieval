@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api; 
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class ContacteController extends Controller
         $dades = $validator->validated();
 
         Mail::send([], [], function ($mail) use ($dades) {
-            $mail->to('ezzarfi.souhaila@gmail.com')
+            $mail->to(env('MAIL_TO'))
                 ->subject('Nova consulta - ' . $dades['nom'])
                 ->replyTo($dades['email'], $dades['nom'])
                 ->html("

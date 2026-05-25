@@ -236,12 +236,12 @@ export default function InscritsModal({
                             className="text-red-600 hover:bg-red-100 p-1.5 rounded-md transition-colors"
                             title="Cancel·lar inscripció"
                           >
-                            <MdDelete size={22} />
+                            <MdClose size={22} />
                           </button>
                         ) : (
                           <button
                             onClick={() => onCancel(i.id)}
-                            className="text-red-300 hover:bg-red-50 hover:text-red-500 p-1.5 rounded-md transition-colors"
+                            className="text-red-400 hover:bg-red-50 hover:text-red-500 p-1.5 rounded-md transition-colors"
                             title="Eliminar definitivament"
                           >
                             <MdDelete size={22} />
