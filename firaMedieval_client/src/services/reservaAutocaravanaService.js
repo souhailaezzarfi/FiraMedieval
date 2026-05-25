@@ -4,6 +4,8 @@ const reservaService = {
   create: (data) => api.post("/reserves", data),
   update: (id, data) => api.put(`/reserves/${id}`, data),
   update: (id, data) => api.put(`/reserves/${id}`, data),
+  deleteCancelades: () => api.delete('/reserves/cancelades'),
   delete: (id) => api.delete(`/reserves/${id}`),
+  
 };
 export default reservaService;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import reservaService from "../../services/reservaAutocaravanaService";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdClose } from "react-icons/md";
 
 const PER_PAGE = 8;
 
@@ -42,12 +42,46 @@ export default function Reserves() {
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleCancel = async (id) => {
-    if (!window.confirm("Segur que vols cancel·lar aquesta reserva?")) return;
+    const reserva = reserves.find((r) => r.id === id);
+
+    if (reserva?.estat === "cancel·lada") {
+      if (
+        !window.confirm(
+          "Segur que vols eliminar definitivament aquesta reserva?",
+        )
+      )
+        return;
+      try {
+        await reservaService.delete(id);
+        setReserves((prev) => prev.filter((r) => r.id !== id));
+      } catch (err) {
+        alert(err.response?.data?.message ?? "Error en eliminar.");
+      }
+    } else {
+      if (!window.confirm("Segur que vols cancel·lar aquesta reserva?")) return;
+      try {
+        await reservaService.delete(id);
+        load();
+      } catch (err) {
+        alert(err.response?.data?.message ?? "Error en cancel·lar.");
+      }
+    }
+  };
+
+  const handleDeleteCancelades = async () => {
+    if (
+      !window.confirm(
+        "Segur que vols eliminar totes les reserves cancel·lades?",
+      )
+    )
+      return;
     try {
-      await reservaService.delete(id);
-      load();
+      await reservaService.deleteCancelades();
+      setReserves((prev) => prev.filter((r) => r.estat !== "cancel·lada"));
     } catch (err) {
-      alert(err.response?.data?.message ?? "Error en cancel·lar la reserva.");
+      alert(
+        err.response?.data?.message ?? "Error en eliminar les cancel·lades.",
+      );
     }
   };
 
@@ -95,6 +129,14 @@ export default function Reserves() {
             }}
             className="px-4 py-2 rounded-lg font-sans border border-[#C8B08A] bg-white text-md text-[#2C1A0E] outline-none focus:border-[#D4A853] w-90"
           />
+          {reserves.some((r) => r.estat === "cancel·lada") && (
+            <button
+              onClick={handleDeleteCancelades}
+              className="text-md text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors font-medium"
+            >
+              Eliminar totes les cancel·lades
+            </button>
+          )}
         </div>
       </div>
 
@@ -137,7 +179,9 @@ export default function Reserves() {
                     <p className="text-sm font-sans font-medium text-[#432918]">
                       {r.usuari?.nom} {r.usuari?.cognoms}
                     </p>
-                    <p className="text-xs font-sans text-[#8B6A4A]">{r.usuari?.email}</p>
+                    <p className="text-xs font-sans text-[#8B6A4A]">
+                      {r.usuari?.email}
+                    </p>
                   </td>
                   <td className="px-4 py-3 font-sans text-sm text-[#6B4F30]">
                     {r.marca_vehicle} {r.model_vehicle}
@@ -154,12 +198,23 @@ export default function Reserves() {
                   <td className="px-4 py-3 text-sm font-sans text-[#6B4F30]">
                     {formatDate(r.data_sortida)}
                   </td>
-                  <td className="px-4 py-3 font-sans text-sm">{estatBadge(r.estat)}</td>
+                  <td className="px-4 py-3 font-sans text-sm">
+                    {estatBadge(r.estat)}
+                  </td>
                   <td className="px-4 py-3">
-                    {r.estat !== "cancel·lada" && (
+                    {r.estat !== "cancel·lada" ? (
                       <button
                         onClick={() => handleCancel(r.id)}
-                        className="text-red-700 text-md font-sans px-3 py-1 rounded-md hover:bg-red-50 transition-colors"
+                        className="text-red-700 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                        title="Cancel·lar reserva"
+                      >
+                        <MdClose size={22} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleCancel(r.id)}
+                        className="text-red-400 hover:bg-red-50 hover:text-red-500 p-1.5 rounded-md transition-colors"
+                        title="Eliminar definitivament"
                       >
                         <MdDelete size={22} />
                       </button>

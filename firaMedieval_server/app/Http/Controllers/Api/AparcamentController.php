@@ -34,7 +34,7 @@ class AparcamentController extends Controller
             ],
             [
                 'nom.required' => 'El nom de la aparcament es obligatori.',
-                'nom.max' => 'El nom de la apa$aparcament no pot superar els 50 caracters.',
+                'nom.max' => 'El nom de la aparcament no pot superar els 50 caracters.',
                 'nom.unique' => 'El nom de la aparcament ja existeix.',
                 'aforament.integer' => 'El aforament ha de ser un nombre entero.',
                 'aforament.min' => 'El aforament ha de ser almenys 1 plaza.',
