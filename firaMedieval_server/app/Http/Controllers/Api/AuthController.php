@@ -18,7 +18,7 @@ class AuthController extends Controller
         $request->validate([
             'nom' => 'required|string|max:100',
             'cognoms' => 'required|string|max:150',
-            'telefon' => 'required|string|max:20',
+            'telefon' => 'required|string|min:9|max:20',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);

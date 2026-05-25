@@ -1,0 +1,76 @@
+services:
+  server:
+    build:
+      context: ./firaMedieval_server
+      dockerfile: Dockerfile
+    container_name: fira-medieval-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./firaMedieval_server:/var/www
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=fira_medieval
+      - DB_USERNAME=fira_user
+      - DB_PASSWORD=fira_pass
+    networks:
+      - fira-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    depends_on:
+      - db
+    command: >
+      bash -c "
+        if [ ! -f .env ]; then cp .env.example .env; fi &&
+        composer install &&
+        php artisan key:generate &&
+        while ! php artisan migrate --force; do echo 'Esperant la base de dades...'; sleep 3; done &&
+        php artisan serve --host=0.0.0.0 --port=8000
+      "
+
+  client:
+    build:
+      context: ./firaMedieval_client
+      dockerfile: Dockerfile
+    container_name: fira-medieval-client
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./firaMedieval_client:/app
+      - /app/node_modules
+    networks:
+      - fira-network
+    command: >
+      sh -c "
+        if [ ! -f .env ]; then cp .env.example .env; fi &&
+        npm install &&
+        npm run dev -- --host
+      "
+
+  db:
+    image: mysql:8.2
+    container_name: fira-medieval-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: fira_medieval
+      MYSQL_USER: fira_user
+      MYSQL_PASSWORD: fira_pass
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - fira-network
+
+networks:
+  fira-network:
+    driver: bridge
+
+volumes:
+  db_data:

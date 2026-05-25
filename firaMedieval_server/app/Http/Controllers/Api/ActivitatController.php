@@ -15,9 +15,19 @@ class ActivitatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $activitats = Activitat::with(['horaris', 'categories'])->get();
+        $query = Activitat::with(['horaris', 'categories']);
+
+        if ($request->filled('ubicacio')) {
+            $query->where('ubicacio', $request->ubicacio);
+        }
+
+        if ($request->filled('exclude_id')) {
+            $query->where('id', '!=', $request->exclude_id);
+        }
+
+        $activitats = $query->get();
 
         foreach ($activitats as $activitat) {
             if ($activitat->imatge) {
@@ -165,14 +175,16 @@ class ActivitatController extends Controller
             $activitat->fill($request->except(['imatge', 'horaris', 'categories']));
 
             if ($request->hasFile('imatge')) {
-                // Esborrar la imatge antiga si existeix
                 if ($activitat->imatge) {
                     Storage::disk('public')->delete($activitat->imatge);
                 }
-
-                // Guardar la nova imatge
                 $path = $request->file('imatge')->store('imatges', 'public');
                 $activitat->imatge = $path;
+            } elseif ($request->input('eliminar_imatge') == '1') {
+                if ($activitat->imatge) {
+                    Storage::disk('public')->delete($activitat->imatge);
+                }
+                $activitat->imatge = null;
             }
 
             $activitat->save();
