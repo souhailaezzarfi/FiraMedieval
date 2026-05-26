@@ -532,7 +532,7 @@ function InfoPractica() {
                     <div className="flex gap-6">
                       <div>
                         <p className="text-xs text-[#432918]/50 uppercase tracking-wider">
-                          Arribada
+                          Data Inici
                         </p>
                         <p className="font-bold text-[#432918] text-base">
                           {new Date(
@@ -546,7 +546,7 @@ function InfoPractica() {
                       </div>
                       <div>
                         <p className="text-xs text-[#432918]/50 uppercase tracking-wider">
-                          Sortida
+                          Data Final
                         </p>
                         <p className="font-bold text-[#432918] text-base">
                           {new Date(
